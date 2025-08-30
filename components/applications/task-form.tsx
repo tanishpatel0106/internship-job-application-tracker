@@ -29,7 +29,7 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
     due_date: initialData?.due_date || "",
     priority: initialData?.priority || "Medium",
     status: initialData?.status || "Pending",
-    application_id: applicationId || initialData?.application_id || "defaultAppId", // Updated default value
+    application_id: applicationId || initialData?.application_id || "default",
   })
 
   useEffect(() => {
@@ -57,10 +57,13 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
 
     try {
       const submitData = {
-        ...formData,
-        application_id: formData.application_id || null,
-        due_date: formData.due_date || undefined,
+        title: formData.title,
         description: formData.description || undefined,
+        due_date: formData.due_date || undefined,
+        priority: formData.priority,
+        status: formData.status,
+        application_id:
+          formData.application_id && formData.application_id !== "default" ? formData.application_id : null,
       }
 
       const url = initialData ? `/api/tasks/${initialData.id}` : "/api/tasks"
@@ -104,7 +107,7 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
                   <SelectValue placeholder="Select an application (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="defaultAppId">No application</SelectItem> {/* Updated value */}
+                  <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
                       {app.position} at {app.company}

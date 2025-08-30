@@ -43,6 +43,7 @@ export function TasksTab({ applicationId }: TasksTabProps) {
       if (response.ok) {
         const data = await response.json()
         console.log("[v0] Tasks data received:", data)
+        console.log("[v0] Number of tasks:", data.length)
         setTasks(data)
       } else {
         const errorData = await response.text()
@@ -58,6 +59,7 @@ export function TasksTab({ applicationId }: TasksTabProps) {
   }
 
   useEffect(() => {
+    console.log("[v0] TasksTab mounted with applicationId:", applicationId)
     fetchTasks()
   }, [applicationId])
 

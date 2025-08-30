@@ -23,7 +23,7 @@ export const contactSchema = z.object({
 })
 
 export const interviewRoundSchema = z.object({
-  application_id: z.string().uuid("Invalid application ID"),
+  application_id: z.string().uuid("Invalid application ID").optional().nullable(),
   round_number: z.number().int().positive("Round number must be positive"),
   interview_type: z.enum(["Phone Screen", "Technical", "Behavioral", "Panel", "Final", "Other"]),
   scheduled_date: z.string().optional(),
@@ -40,7 +40,7 @@ export const taskSchema = z.object({
   due_date: z.string().optional(),
   priority: z.enum(["Low", "Medium", "High", "Critical"]),
   status: z.enum(["Pending", "In Progress", "Completed", "Cancelled"]),
-  application_id: z.string().uuid().optional(),
+  application_id: z.string().uuid().optional().nullable(),
 })
 
 export const profileSchema = z.object({

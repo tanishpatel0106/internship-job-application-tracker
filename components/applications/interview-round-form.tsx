@@ -60,7 +60,8 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
 
     try {
       const submitData = {
-        application_id: formData.application_id || null,
+        application_id:
+          formData.application_id && formData.application_id !== "default" ? formData.application_id : null,
         round_number: Number(formData.round_number),
         interview_type: formData.interview_type,
         scheduled_date: formData.scheduled_date || undefined,

@@ -30,7 +30,7 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
     position: initialData?.position || "",
     company: initialData?.company || "",
     notes: initialData?.notes || "",
-    application_id: applicationId || initialData?.application_id || "none",
+    application_id: applicationId || initialData?.application_id || "default",
   })
 
   useEffect(() => {
@@ -58,8 +58,14 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
 
     try {
       const submitData = {
-        ...formData,
-        application_id: formData.application_id || null,
+        name: formData.name,
+        email: formData.email || undefined,
+        phone: formData.phone || undefined,
+        position: formData.position || undefined,
+        company: formData.company || undefined,
+        notes: formData.notes || undefined,
+        application_id:
+          formData.application_id && formData.application_id !== "default" ? formData.application_id : null,
       }
 
       const url = initialData ? `/api/contacts/${initialData.id}` : "/api/contacts"
@@ -103,7 +109,7 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
                   <SelectValue placeholder="Select an application (optional)" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">No application</SelectItem>
+                  <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
                       {app.position} at {app.company}

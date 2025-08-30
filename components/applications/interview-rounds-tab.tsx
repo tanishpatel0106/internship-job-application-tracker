@@ -45,6 +45,7 @@ export function InterviewRoundsTab({ applicationId }: InterviewRoundsTabProps) {
       if (response.ok) {
         const data = await response.json()
         console.log("[v0] Interview rounds data received:", data)
+        console.log("[v0] Number of interviews:", data.length)
         setInterviews(data)
       } else {
         const errorData = await response.text()
@@ -60,6 +61,7 @@ export function InterviewRoundsTab({ applicationId }: InterviewRoundsTabProps) {
   }
 
   useEffect(() => {
+    console.log("[v0] InterviewRoundsTab mounted with applicationId:", applicationId)
     fetchInterviews()
   }, [applicationId])
 
