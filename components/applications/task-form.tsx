@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
-import type { Task } from "@/lib/types"
+import { useState, useEffect } from "react"
+import type { Task, Application } from "@/lib/types"
 
 interface TaskFormProps {
-  applicationId: string
+  applicationId?: string // Made applicationId optional
   initialData?: Task | null
   onComplete: () => void
   onCancel: () => void
@@ -21,6 +21,7 @@ interface TaskFormProps {
 export function TaskForm({ applicationId, initialData, onComplete, onCancel }: TaskFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
 
   const [formData, setFormData] = useState({
     title: initialData?.title || "",
@@ -28,7 +29,26 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
     due_date: initialData?.due_date || "",
     priority: initialData?.priority || "Medium",
     status: initialData?.status || "Pending",
+    application_id: applicationId || initialData?.application_id || "defaultAppId", // Updated default value
   })
+
+  useEffect(() => {
+    if (!applicationId) {
+      fetchApplications()
+    }
+  }, [applicationId])
+
+  const fetchApplications = async () => {
+    try {
+      const response = await fetch("/api/applications")
+      if (response.ok) {
+        const data = await response.json()
+        setApplications(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch applications:", error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +58,7 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
     try {
       const submitData = {
         ...formData,
-        application_id: applicationId,
+        application_id: formData.application_id || null,
         due_date: formData.due_date || undefined,
         description: formData.description || undefined,
       }
@@ -76,6 +96,25 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {!applicationId && (
+            <div className="space-y-2">
+              <Label htmlFor="application_id">Associated Application (Optional)</Label>
+              <Select value={formData.application_id} onValueChange={(value) => handleChange("application_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an application (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="defaultAppId">No application</SelectItem> {/* Updated value */}
+                  {applications.map((app) => (
+                    <SelectItem key={app.id} value={app.id}>
+                      {app.position} at {app.company}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="space-y-2">
             <Label htmlFor="title">Title *</Label>
             <Input id="title" value={formData.title} onChange={(e) => handleChange("title", e.target.value)} required />

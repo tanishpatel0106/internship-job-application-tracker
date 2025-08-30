@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { useState } from "react"
-import type { Contact } from "@/lib/types"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useState, useEffect } from "react"
+import type { Contact, Application } from "@/lib/types"
 
 interface ContactFormProps {
-  applicationId: string
+  applicationId?: string
   initialData?: Contact | null
   onComplete: () => void
   onCancel: () => void
@@ -20,6 +21,7 @@ interface ContactFormProps {
 export function ContactForm({ applicationId, initialData, onComplete, onCancel }: ContactFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
 
   const [formData, setFormData] = useState({
     name: initialData?.name || "",
@@ -28,7 +30,26 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
     position: initialData?.position || "",
     company: initialData?.company || "",
     notes: initialData?.notes || "",
+    application_id: applicationId || initialData?.application_id || "none",
   })
+
+  useEffect(() => {
+    if (!applicationId) {
+      fetchApplications()
+    }
+  }, [applicationId])
+
+  const fetchApplications = async () => {
+    try {
+      const response = await fetch("/api/applications")
+      if (response.ok) {
+        const data = await response.json()
+        setApplications(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch applications:", error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -38,7 +59,7 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
     try {
       const submitData = {
         ...formData,
-        application_id: applicationId,
+        application_id: formData.application_id || null,
       }
 
       const url = initialData ? `/api/contacts/${initialData.id}` : "/api/contacts"
@@ -74,6 +95,25 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {!applicationId && (
+            <div className="space-y-2">
+              <Label htmlFor="application_id">Associated Application (Optional)</Label>
+              <Select value={formData.application_id} onValueChange={(value) => handleChange("application_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an application (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">No application</SelectItem>
+                  {applications.map((app) => (
+                    <SelectItem key={app.id} value={app.id}>
+                      {app.position} at {app.company}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="name">Name *</Label>

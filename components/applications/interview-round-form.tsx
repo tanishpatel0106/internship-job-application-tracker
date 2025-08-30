@@ -8,11 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useState } from "react"
-import type { InterviewRound } from "@/lib/types"
+import { useState, useEffect } from "react"
+import type { InterviewRound, Application } from "@/lib/types"
 
 interface InterviewRoundFormProps {
-  applicationId: string
+  applicationId?: string // Made applicationId optional
   initialData?: InterviewRound | null
   onComplete: () => void
   onCancel: () => void
@@ -21,6 +21,7 @@ interface InterviewRoundFormProps {
 export function InterviewRoundForm({ applicationId, initialData, onComplete, onCancel }: InterviewRoundFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [applications, setApplications] = useState<Application[]>([])
 
   const [formData, setFormData] = useState({
     round_number: initialData?.round_number || 1,
@@ -31,7 +32,26 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
     notes: initialData?.notes || "",
     feedback: initialData?.feedback || "",
     result: initialData?.result || "Not set",
+    application_id: applicationId || initialData?.application_id || "default",
   })
+
+  useEffect(() => {
+    if (!applicationId) {
+      fetchApplications()
+    }
+  }, [applicationId])
+
+  const fetchApplications = async () => {
+    try {
+      const response = await fetch("/api/applications")
+      if (response.ok) {
+        const data = await response.json()
+        setApplications(data)
+      }
+    } catch (error) {
+      console.error("Failed to fetch applications:", error)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -40,7 +60,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
 
     try {
       const submitData = {
-        application_id: applicationId,
+        application_id: formData.application_id || null,
         round_number: Number(formData.round_number),
         interview_type: formData.interview_type,
         scheduled_date: formData.scheduled_date || undefined,
@@ -84,6 +104,25 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {!applicationId && (
+            <div className="space-y-2">
+              <Label htmlFor="application_id">Associated Application (Optional)</Label>
+              <Select value={formData.application_id} onValueChange={(value) => handleChange("application_id", value)}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select an application (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="default">No application</SelectItem>
+                  {applications.map((app) => (
+                    <SelectItem key={app.id} value={app.id}>
+                      {app.position} at {app.company}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="round_number">Round Number *</Label>
