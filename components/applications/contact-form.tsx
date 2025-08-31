@@ -44,7 +44,10 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
       const response = await fetch("/api/applications")
       if (response.ok) {
         const data = await response.json()
-        setApplications(data)
+        // The applications API returns an object with a `data` property
+        // rather than a raw array of applications. Ensure we always set
+        // an array to avoid runtime errors when mapping.
+        setApplications(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error)
