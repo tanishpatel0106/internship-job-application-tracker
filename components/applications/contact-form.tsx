@@ -84,7 +84,10 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
         onComplete()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || "Failed to save contact")
+        const message = Array.isArray(errorData.error)
+          ? errorData.error.map((e: any) => e.message).join(", ")
+          : errorData.error
+        setError(message || "Failed to save contact")
       }
     } catch (error) {
       setError("An unexpected error occurred")
