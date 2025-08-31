@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Calendar, CheckCircle2 } from "lucide-react"
-import { TaskForm } from "./task-form"
+import Link from "next/link"
 import type { Task } from "@/lib/types"
 
 const priorityColors = {
@@ -20,7 +20,6 @@ export function TasksPageView() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showForm, setShowForm] = useState(false)
 
   const fetchTasks = async () => {
     setIsLoading(true)
@@ -75,9 +74,11 @@ export function TasksPageView() {
             Keep track of all your application-related tasks and deadlines.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
+        <Button asChild>
+          <Link href="/dashboard/tasks/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Task
+          </Link>
         </Button>
       </div>
 
@@ -111,9 +112,11 @@ export function TasksPageView() {
           <CardContent className="p-12 text-center">
             <div className="space-y-4">
               <div className="text-muted-foreground">{searchTerm ? "No tasks match your search" : "No tasks yet"}</div>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Task
+              <Button asChild>
+                <Link href="/dashboard/tasks/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Task
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -203,15 +206,6 @@ export function TasksPageView() {
         </div>
       )}
 
-      {showForm && (
-        <TaskForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            fetchTasks()
-          }}
-        />
-      )}
     </div>
   )
 }

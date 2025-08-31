@@ -6,14 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Mail, Phone, Building } from "lucide-react"
-import { ContactForm } from "./contact-form"
+import Link from "next/link"
 import type { Contact } from "@/lib/types"
 
 export function ContactsPageView() {
   const [contacts, setContacts] = useState<Contact[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showForm, setShowForm] = useState(false)
 
   const fetchContacts = async () => {
     setIsLoading(true)
@@ -48,9 +47,11 @@ export function ContactsPageView() {
           <h1 className="text-3xl font-bold text-balance">Contacts</h1>
           <p className="text-muted-foreground text-pretty">Manage all your professional contacts in one place.</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Contact
+        <Button asChild>
+          <Link href="/dashboard/contacts/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Contact
+          </Link>
         </Button>
       </div>
 
@@ -87,9 +88,11 @@ export function ContactsPageView() {
               <div className="text-muted-foreground">
                 {searchTerm ? "No contacts match your search" : "No contacts yet"}
               </div>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Contact
+              <Button asChild>
+                <Link href="/dashboard/contacts/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Contact
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -134,15 +137,6 @@ export function ContactsPageView() {
         </div>
       )}
 
-      {showForm && (
-        <ContactForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            fetchContacts()
-          }}
-        />
-      )}
     </div>
   )
 }

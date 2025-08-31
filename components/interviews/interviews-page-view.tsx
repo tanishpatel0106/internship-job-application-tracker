@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Calendar, Clock, MapPin } from "lucide-react"
-import { InterviewRoundForm } from "../applications/interview-round-form"
+import Link from "next/link"
 import type { InterviewRound } from "@/lib/types"
 
 const statusColors = {
@@ -19,7 +19,6 @@ export function InterviewsPageView() {
   const [interviews, setInterviews] = useState<InterviewRound[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showForm, setShowForm] = useState(false)
 
   const fetchInterviews = async () => {
     setIsLoading(true)
@@ -60,9 +59,11 @@ export function InterviewsPageView() {
           <h1 className="text-3xl font-bold text-balance">Interviews</h1>
           <p className="text-muted-foreground text-pretty">Track all your interview rounds and their outcomes.</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Interview
+        <Button asChild>
+          <Link href="/dashboard/interviews/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Interview
+          </Link>
         </Button>
       </div>
 
@@ -98,13 +99,15 @@ export function InterviewsPageView() {
               <div className="text-muted-foreground">
                 {searchTerm ? "No interviews match your search" : "No interviews yet"}
               </div>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Interview
+              <Button asChild>
+                <Link href="/dashboard/interviews/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Interview
+                </Link>
               </Button>
-            </div>
-          </CardContent>
-        </Card>
+          </div>
+        </CardContent>
+      </Card>
       ) : (
         <div className="space-y-6">
           {upcomingInterviews.length > 0 && (
@@ -197,15 +200,6 @@ export function InterviewsPageView() {
         </div>
       )}
 
-      {showForm && (
-        <InterviewRoundForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            fetchInterviews()
-          }}
-        />
-      )}
     </div>
   )
 }
