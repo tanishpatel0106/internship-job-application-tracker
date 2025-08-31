@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Calendar, Clock, User, AlertCircle } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { InterviewRoundForm } from "./interview-round-form"
 import type { InterviewRound } from "@/lib/types"
 
@@ -35,41 +35,48 @@ export function InterviewRoundsTab({ applicationId }: InterviewRoundsTabProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingInterview, setEditingInterview] = useState<InterviewRound | null>(null)
 
-  const fetchInterviews = async () => {
-    try {
-      setError(null)
-      console.log("[v0] Fetching interviews for application:", applicationId)
-      const response = await fetch(`/api/interview-rounds?application_id=${applicationId}`)
-      console.log("[v0] Interview rounds API response status:", response.status)
+  const fetchInterviews = useCallback(async () => {
+    if (!applicationId) return
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log("[v0] Interview rounds data received:", data)
-        console.log("[v0] Number of interviews:", data.length)
-        setInterviews(data)
-      } else {
-        const errorData = await response.text()
-        console.error("[v0] Interview rounds API error:", response.status, errorData)
-        setError(`Failed to load interviews: ${response.status} ${response.statusText}`)
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch(`/api/interview-rounds?application_id=${applicationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      setInterviews(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error("[v0] Failed to fetch interviews:", error)
-      setError("Failed to load interviews. Please check your connection.")
+      console.error("Failed to fetch interviews:", error)
+      setError(error instanceof Error ? error.message : "Failed to load interviews")
+      setInterviews([])
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    console.log("[v0] InterviewRoundsTab mounted with applicationId:", applicationId)
-    fetchInterviews()
   }, [applicationId])
 
-  const handleFormComplete = () => {
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchInterviews()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [fetchInterviews])
+
+  const handleFormComplete = useCallback(() => {
     setShowForm(false)
     setEditingInterview(null)
     fetchInterviews()
-  }
+  }, [fetchInterviews])
 
   if (isLoading) {
     return (

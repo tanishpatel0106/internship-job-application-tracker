@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Plus, CheckSquare, Calendar, AlertCircle } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { TaskForm } from "./task-form"
 import type { Task } from "@/lib/types"
 
@@ -33,57 +33,67 @@ export function TasksTab({ applicationId }: TasksTabProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
 
-  const fetchTasks = async () => {
-    try {
-      setError(null)
-      console.log("[v0] Fetching tasks for application:", applicationId)
-      const response = await fetch(`/api/tasks?application_id=${applicationId}`)
-      console.log("[v0] Tasks API response status:", response.status)
+  const fetchTasks = useCallback(async () => {
+    if (!applicationId) return
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log("[v0] Tasks data received:", data)
-        console.log("[v0] Number of tasks:", data.length)
-        setTasks(data)
-      } else {
-        const errorData = await response.text()
-        console.error("[v0] Tasks API error:", response.status, errorData)
-        setError(`Failed to load tasks: ${response.status} ${response.statusText}`)
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch(`/api/tasks?application_id=${applicationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      setTasks(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error("[v0] Failed to fetch tasks:", error)
-      setError("Failed to load tasks. Please check your connection.")
+      console.error("Failed to fetch tasks:", error)
+      setError(error instanceof Error ? error.message : "Failed to load tasks")
+      setTasks([])
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    console.log("[v0] TasksTab mounted with applicationId:", applicationId)
-    fetchTasks()
   }, [applicationId])
 
-  const handleFormComplete = () => {
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchTasks()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [fetchTasks])
+
+  const handleFormComplete = useCallback(() => {
     setShowForm(false)
     setEditingTask(null)
     fetchTasks()
-  }
+  }, [fetchTasks])
 
-  const markTaskComplete = async (taskId: string) => {
-    try {
-      const response = await fetch(`/api/tasks/${taskId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "Completed" }),
-      })
+  const markTaskComplete = useCallback(
+    async (taskId: string) => {
+      try {
+        const response = await fetch(`/api/tasks/${taskId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ status: "Completed" }),
+        })
 
-      if (response.ok) {
-        fetchTasks()
+        if (response.ok) {
+          fetchTasks()
+        }
+      } catch (error) {
+        console.error("Failed to update task:", error)
       }
-    } catch (error) {
-      console.error("Failed to update task:", error)
-    }
-  }
+    },
+    [fetchTasks],
+  )
 
   if (isLoading) {
     return (

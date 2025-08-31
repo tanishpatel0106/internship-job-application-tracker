@@ -3,7 +3,7 @@
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus, Mail, Phone, Building, AlertCircle } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { ContactForm } from "./contact-form"
 import type { Contact } from "@/lib/types"
 
@@ -18,39 +18,48 @@ export function ContactsTab({ applicationId }: ContactsTabProps) {
   const [showForm, setShowForm] = useState(false)
   const [editingContact, setEditingContact] = useState<Contact | null>(null)
 
-  const fetchContacts = async () => {
-    try {
-      setError(null)
-      console.log("[v0] Fetching contacts for application:", applicationId)
-      const response = await fetch(`/api/contacts?application_id=${applicationId}`)
-      console.log("[v0] Contacts API response status:", response.status)
+  const fetchContacts = useCallback(async () => {
+    if (!applicationId) return
 
-      if (response.ok) {
-        const data = await response.json()
-        console.log("[v0] Contacts data received:", data)
-        setContacts(data)
-      } else {
-        const errorData = await response.text()
-        console.error("[v0] Contacts API error:", response.status, errorData)
-        setError(`Failed to load contacts: ${response.status} ${response.statusText}`)
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch(`/api/contacts?application_id=${applicationId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      const data = await response.json()
+      setContacts(Array.isArray(data) ? data : [])
     } catch (error) {
-      console.error("[v0] Failed to fetch contacts:", error)
-      setError("Failed to load contacts. Please check your connection.")
+      console.error("Failed to fetch contacts:", error)
+      setError(error instanceof Error ? error.message : "Failed to load contacts")
+      setContacts([])
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    fetchContacts()
   }, [applicationId])
 
-  const handleFormComplete = () => {
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      fetchContacts()
+    }, 100)
+
+    return () => clearTimeout(timeoutId)
+  }, [fetchContacts])
+
+  const handleFormComplete = useCallback(() => {
     setShowForm(false)
     setEditingContact(null)
     fetchContacts()
-  }
+  }, [fetchContacts])
 
   if (isLoading) {
     return (
