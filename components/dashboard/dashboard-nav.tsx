@@ -13,13 +13,15 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Link from "next/link"
 import { useRouter, usePathname } from "next/navigation"
 import type { User } from "@supabase/supabase-js"
+import type { Profile } from "@/lib/types"
 import { LayoutDashboard, FileText, Users, CheckSquare, Calendar, Settings, LogOut } from "lucide-react"
 
 interface DashboardNavProps {
   user: User
+  profile: Profile | null
 }
 
-export function DashboardNav({ user }: DashboardNavProps) {
+export function DashboardNav({ user, profile }: DashboardNavProps) {
   const router = useRouter()
   const pathname = usePathname()
   const supabase = createClient()
@@ -38,8 +40,14 @@ export function DashboardNav({ user }: DashboardNavProps) {
     { name: "Interviews", href: "/dashboard/interviews", icon: Calendar },
   ]
 
-  const getInitials = (email: string) => {
-    return email.split("@")[0].slice(0, 2).toUpperCase()
+  const getInitials = (text: string) => {
+    return text
+      .split(/\s+|@/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0])
+      .join("")
+      .toUpperCase()
   }
 
   return (
@@ -80,14 +88,14 @@ export function DashboardNav({ user }: DashboardNavProps) {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8">
-                  <AvatarFallback>{getInitials(user.email || "")}</AvatarFallback>
+                  <AvatarFallback>{getInitials(profile?.full_name || user.email || "")}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56" align="end" forceMount>
               <div className="flex items-center justify-start gap-2 p-2">
                 <div className="flex flex-col space-y-1 leading-none">
-                  <p className="font-medium">{user.email}</p>
+                  <p className="font-medium">Hi {profile?.full_name || user.email}</p>
                 </div>
               </div>
               <DropdownMenuSeparator />
