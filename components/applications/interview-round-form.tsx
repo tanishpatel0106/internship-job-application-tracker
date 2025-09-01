@@ -46,7 +46,8 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
       const response = await fetch("/api/applications")
       if (response.ok) {
         const data = await response.json()
-        setApplications(data)
+        // The applications API returns a raw array, not wrapped in a `data` property
+        setApplications(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error)
@@ -116,7 +117,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
                   <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
-                      {app.position} at {app.company}
+                      {app.position_title} at {app.company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

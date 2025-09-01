@@ -39,7 +39,7 @@ export interface Contact {
 export interface InterviewRound {
   id: string
   user_id: string
-  application_id: string
+  application_id?: string
   round_number: number
   interview_type: "Phone Screen" | "Technical" | "Behavioral" | "Panel" | "Final" | "Other"
   scheduled_date?: string
