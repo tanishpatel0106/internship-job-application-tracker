@@ -31,7 +31,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
     interviewer_names: initialData?.interviewer_names || "",
     notes: initialData?.notes || "",
     feedback: initialData?.feedback || "",
-    result: initialData?.result || "Not set",
+    result: initialData?.result || "",
     application_id: applicationId || initialData?.application_id || "default",
   })
 
@@ -194,7 +194,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
                 <SelectValue placeholder="Select result" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="Not set">Not set</SelectItem>
+                <SelectItem value="">Not set</SelectItem>
                 <SelectItem value="Passed">Passed</SelectItem>
                 <SelectItem value="Failed">Failed</SelectItem>
                 <SelectItem value="Pending">Pending</SelectItem>
