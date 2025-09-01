@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Mail, Phone, Building } from "lucide-react"
+import { Plus, Search, Mail, Phone, Building, Pencil, Trash, Link as LinkIcon } from "lucide-react"
 import Link from "next/link"
 import type { Contact } from "@/lib/types"
 
@@ -33,6 +33,18 @@ export function ContactsPageView() {
   useEffect(() => {
     fetchContacts()
   }, [])
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this contact?")) return
+    try {
+      const response = await fetch(`/api/contacts/${id}`, { method: "DELETE" })
+      if (response.ok) {
+        setContacts((prev) => prev.filter((c) => c.id !== id))
+      }
+    } catch (error) {
+      console.error("Failed to delete contact:", error)
+    }
+  }
 
   const filteredContacts = contacts.filter(
     (contact) =>
@@ -103,9 +115,28 @@ export function ContactsPageView() {
           {filteredContacts.map((contact) => (
             <Card key={contact.id}>
               <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <span>{contact.name}</span>
-                  {contact.position && <Badge variant="outline">{contact.position}</Badge>}
+                <CardTitle className="flex items-start justify-between">
+                  <div className="flex items-center space-x-2">
+                    <span>{contact.name}</span>
+                    {contact.position && <Badge variant="outline">{contact.position}</Badge>}
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    {contact.application_id && (
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/applications/${contact.application_id}`}>
+                          <LinkIcon className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                    )}
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/dashboard/contacts/${contact.id}/edit`}>
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(contact.id)}>
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </CardTitle>
                 <CardDescription className="flex items-center">
                   <Building className="h-4 w-4 mr-1" />

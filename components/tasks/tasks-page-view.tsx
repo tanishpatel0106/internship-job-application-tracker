@@ -27,7 +27,8 @@ export function TasksPageView() {
       const response = await fetch("/api/tasks")
       if (response.ok) {
         const data = await response.json()
-        setTasks(data.data || [])
+        // The tasks API returns a raw array, not wrapped in a `data` property
+        setTasks(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch tasks:", error)
