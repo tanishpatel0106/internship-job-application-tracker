@@ -31,7 +31,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
     interviewer_names: initialData?.interviewer_names || "",
     notes: initialData?.notes || "",
     feedback: initialData?.feedback || "",
-    result: initialData?.result || "",
+    result: initialData?.result || "default",
     application_id: applicationId || initialData?.application_id || "default",
   })
 
@@ -70,7 +70,10 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
         interviewer_names: formData.interviewer_names || undefined,
         notes: formData.notes || undefined,
         feedback: formData.feedback || undefined,
-        result: formData.result || undefined,
+        result:
+          formData.result && formData.result !== "default"
+            ? formData.result
+            : undefined,
       }
 
       const url = initialData ? `/api/interview-rounds/${initialData.id}` : "/api/interview-rounds"
@@ -194,7 +197,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
                 <SelectValue placeholder="Select result" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Not set</SelectItem>
+                <SelectItem value="default">Not set</SelectItem>
                 <SelectItem value="Passed">Passed</SelectItem>
                 <SelectItem value="Failed">Failed</SelectItem>
                 <SelectItem value="Pending">Pending</SelectItem>
