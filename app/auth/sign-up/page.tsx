@@ -64,7 +64,7 @@ export default function SignUpPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-2xl">Create Account</CardTitle>
-              <CardDescription>Start tracking your internship applications</CardDescription>
+              <CardDescription>Start tracking your Internship / Job applications</CardDescription>
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSignUp}>

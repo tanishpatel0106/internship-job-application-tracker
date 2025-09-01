@@ -43,7 +43,7 @@ export function RecentApplications() {
       <Card>
         <CardHeader>
           <CardTitle>Recent Applications</CardTitle>
-          <CardDescription>Your latest internship applications</CardDescription>
+          <CardDescription>Your latest Internship / Job applications</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -67,7 +67,7 @@ export function RecentApplications() {
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Recent Applications</CardTitle>
-          <CardDescription>Your latest internship applications</CardDescription>
+          <CardDescription>Your latest Internship / Job applications</CardDescription>
         </div>
         <Button asChild variant="outline" size="sm">
           <Link href="/dashboard/applications">View All</Link>

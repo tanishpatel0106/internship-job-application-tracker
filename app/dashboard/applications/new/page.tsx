@@ -17,7 +17,7 @@ export default async function NewApplicationPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-balance">New Application</h1>
-        <p className="text-muted-foreground text-pretty">Add a new internship application to track your progress.</p>
+        <p className="text-muted-foreground text-pretty">Add a new Internship / Job application to track your progress.</p>
       </div>
       <ApplicationForm />
     </div>

@@ -9,7 +9,7 @@ export function QuickActions() {
   const actions = [
     {
       title: "New Application",
-      description: "Add a new internship application",
+      description: "Add a new Internship / Job application",
       icon: FileText,
       href: "/dashboard/applications/new",
       color: "bg-blue-500",

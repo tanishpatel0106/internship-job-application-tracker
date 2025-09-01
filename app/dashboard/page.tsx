@@ -22,7 +22,7 @@ export default async function DashboardPage() {
       <div>
         <h1 className="text-3xl font-bold text-balance">Dashboard</h1>
         <p className="text-muted-foreground text-pretty">
-          Welcome back! Here&apos;s an overview of your internship applications.
+          Welcome back! Here&apos;s an overview of your Internship / Job applications.
         </p>
       </div>
 

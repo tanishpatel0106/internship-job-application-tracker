@@ -59,7 +59,7 @@ export function DashboardNav({ user, profile }: DashboardNavProps) {
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center">
                 <span className="text-primary-foreground font-bold text-sm">IT</span>
               </div>
-              <span className="font-bold text-xl">Internship Tracker</span>
+              <span className="font-bold text-xl">Internship / Job Tracker</span>
             </Link>
 
             <div className="hidden md:flex items-center space-x-6">

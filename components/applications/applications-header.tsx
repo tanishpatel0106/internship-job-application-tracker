@@ -52,7 +52,7 @@ export function ApplicationsHeader() {
     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 className="text-3xl font-bold text-balance">Applications</h1>
-        <p className="text-muted-foreground text-pretty">Manage and track your internship applications.</p>
+        <p className="text-muted-foreground text-pretty">Manage and track your Internship / Job applications.</p>
       </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
