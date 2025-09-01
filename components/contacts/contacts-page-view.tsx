@@ -20,7 +20,8 @@ export function ContactsPageView() {
       const response = await fetch("/api/contacts")
       if (response.ok) {
         const data = await response.json()
-        setContacts(data.data || [])
+        // The contacts API returns a raw array of contacts, not wrapped in a `data` property
+        setContacts(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch contacts:", error)
@@ -36,8 +37,8 @@ export function ContactsPageView() {
   const filteredContacts = contacts.filter(
     (contact) =>
       contact.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      contact.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      (contact.company || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (contact.email || "").toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   return (
@@ -104,7 +105,7 @@ export function ContactsPageView() {
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
                   <span>{contact.name}</span>
-                  <Badge variant="outline">{contact.role}</Badge>
+                  {contact.position && <Badge variant="outline">{contact.position}</Badge>}
                 </CardTitle>
                 <CardDescription className="flex items-center">
                   <Building className="h-4 w-4 mr-1" />

@@ -118,7 +118,7 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
                   <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
-                      {app.position} at {app.company}
+                      {app.position_title} - {app.company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
