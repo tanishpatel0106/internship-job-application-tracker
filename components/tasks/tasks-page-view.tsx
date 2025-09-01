@@ -6,8 +6,8 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Search, Calendar, CheckCircle2 } from "lucide-react"
-import { TaskForm } from "./task-form"
+import { Plus, Search, Calendar, CheckCircle2, Pencil, Trash, Link as LinkIcon } from "lucide-react"
+import Link from "next/link"
 import type { Task } from "@/lib/types"
 
 const priorityColors = {
@@ -20,7 +20,6 @@ export function TasksPageView() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showForm, setShowForm] = useState(false)
 
   const fetchTasks = async () => {
     setIsLoading(true)
@@ -28,7 +27,8 @@ export function TasksPageView() {
       const response = await fetch("/api/tasks")
       if (response.ok) {
         const data = await response.json()
-        setTasks(data.data || [])
+        // The tasks API returns a raw array, not wrapped in a `data` property
+        setTasks(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch tasks:", error)
@@ -41,19 +41,32 @@ export function TasksPageView() {
     fetchTasks()
   }, [])
 
-  const handleToggleComplete = async (taskId: string, completed: boolean) => {
+  const handleToggleComplete = async (taskId: string, checked: boolean) => {
+    const status = checked ? "Completed" : "Pending"
     try {
       const response = await fetch(`/api/tasks/${taskId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ completed }),
+        body: JSON.stringify({ status }),
       })
 
       if (response.ok) {
-        setTasks(tasks.map((task) => (task.id === taskId ? { ...task, completed } : task)))
+        setTasks(tasks.map((task) => (task.id === taskId ? { ...task, status } : task)))
       }
     } catch (error) {
       console.error("Failed to update task:", error)
+    }
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this task?")) return
+    try {
+      const response = await fetch(`/api/tasks/${id}`, { method: "DELETE" })
+      if (response.ok) {
+        setTasks((prev) => prev.filter((t) => t.id !== id))
+      }
+    } catch (error) {
+      console.error("Failed to delete task:", error)
     }
   }
 
@@ -63,8 +76,8 @@ export function TasksPageView() {
       task.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const completedTasks = filteredTasks.filter((task) => task.completed)
-  const pendingTasks = filteredTasks.filter((task) => !task.completed)
+  const completedTasks = filteredTasks.filter((task) => task.status === "Completed")
+  const pendingTasks = filteredTasks.filter((task) => task.status !== "Completed")
 
   return (
     <div className="space-y-6">
@@ -75,9 +88,11 @@ export function TasksPageView() {
             Keep track of all your application-related tasks and deadlines.
           </p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Task
+        <Button asChild>
+          <Link href="/dashboard/tasks/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Task
+          </Link>
         </Button>
       </div>
 
@@ -111,9 +126,11 @@ export function TasksPageView() {
           <CardContent className="p-12 text-center">
             <div className="space-y-4">
               <div className="text-muted-foreground">{searchTerm ? "No tasks match your search" : "No tasks yet"}</div>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Task
+              <Button asChild>
+                <Link href="/dashboard/tasks/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Task
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -129,7 +146,7 @@ export function TasksPageView() {
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
                         <Checkbox
-                          checked={task.completed}
+                          checked={task.status === "Completed"}
                           onCheckedChange={(checked) => handleToggleComplete(task.id, checked as boolean)}
                           className="mt-1"
                         />
@@ -146,6 +163,21 @@ export function TasksPageView() {
                                   {new Date(task.due_date).toLocaleDateString()}
                                 </div>
                               )}
+                              {task.application_id && (
+                                <Button variant="ghost" size="icon" asChild>
+                                  <Link href={`/dashboard/applications/${task.application_id}`}>
+                                    <LinkIcon className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/dashboard/tasks/${task.id}/edit`}>
+                                  <Pencil className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                                <Trash className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                           {task.description && <p className="text-sm text-muted-foreground">{task.description}</p>}
@@ -170,7 +202,7 @@ export function TasksPageView() {
                     <CardContent className="p-4">
                       <div className="flex items-start space-x-3">
                         <Checkbox
-                          checked={task.completed}
+                          checked={task.status === "Completed"}
                           onCheckedChange={(checked) => handleToggleComplete(task.id, checked as boolean)}
                           className="mt-1"
                         />
@@ -187,6 +219,21 @@ export function TasksPageView() {
                                   {new Date(task.due_date).toLocaleDateString()}
                                 </div>
                               )}
+                              {task.application_id && (
+                                <Button variant="ghost" size="icon" asChild>
+                                  <Link href={`/dashboard/applications/${task.application_id}`}>
+                                    <LinkIcon className="h-4 w-4" />
+                                  </Link>
+                                </Button>
+                              )}
+                              <Button variant="ghost" size="icon" asChild>
+                                <Link href={`/dashboard/tasks/${task.id}/edit`}>
+                                  <Pencil className="h-4 w-4" />
+                                </Link>
+                              </Button>
+                              <Button variant="ghost" size="icon" onClick={() => handleDelete(task.id)}>
+                                <Trash className="h-4 w-4" />
+                              </Button>
                             </div>
                           </div>
                           {task.description && (
@@ -203,15 +250,6 @@ export function TasksPageView() {
         </div>
       )}
 
-      {showForm && (
-        <TaskForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            fetchTasks()
-          }}
-        />
-      )}
     </div>
   )
 }

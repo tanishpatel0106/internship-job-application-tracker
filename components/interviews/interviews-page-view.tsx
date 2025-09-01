@@ -5,21 +5,21 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Calendar, Clock, MapPin } from "lucide-react"
-import { InterviewRoundForm } from "../applications/interview-round-form"
+import { Plus, Search, Calendar, Clock, Pencil, Trash, Link as LinkIcon } from "lucide-react"
+import Link from "next/link"
 import type { InterviewRound } from "@/lib/types"
 
-const statusColors = {
-  Scheduled: "bg-blue-100 text-blue-800",
-  Completed: "bg-green-100 text-green-800",
-  Cancelled: "bg-red-100 text-red-800",
+const resultColors: Record<string, string> = {
+  Passed: "bg-green-100 text-green-800",
+  Failed: "bg-red-100 text-red-800",
+  Pending: "bg-yellow-100 text-yellow-800",
+  Cancelled: "bg-gray-100 text-gray-800",
 }
 
 export function InterviewsPageView() {
   const [interviews, setInterviews] = useState<InterviewRound[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [showForm, setShowForm] = useState(false)
 
   const fetchInterviews = async () => {
     setIsLoading(true)
@@ -27,7 +27,7 @@ export function InterviewsPageView() {
       const response = await fetch("/api/interview-rounds")
       if (response.ok) {
         const data = await response.json()
-        setInterviews(data.data || [])
+        setInterviews(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch interviews:", error)
@@ -40,17 +40,29 @@ export function InterviewsPageView() {
     fetchInterviews()
   }, [])
 
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Are you sure you want to delete this interview?")) return
+    try {
+      const response = await fetch(`/api/interview-rounds/${id}`, { method: "DELETE" })
+      if (response.ok) {
+        setInterviews((prev) => prev.filter((i) => i.id !== id))
+      }
+    } catch (error) {
+      console.error("Failed to delete interview:", error)
+    }
+  }
+
   const filteredInterviews = interviews.filter(
     (interview) =>
-      interview.round_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      interview.interviewer_name?.toLowerCase().includes(searchTerm.toLowerCase()),
+      interview.interview_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (interview.interviewer_names || "").toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const upcomingInterviews = filteredInterviews.filter(
-    (interview) => interview.status === "Scheduled" && new Date(interview.scheduled_date) > new Date(),
+    (interview) => interview.scheduled_date && new Date(interview.scheduled_date) > new Date(),
   )
   const pastInterviews = filteredInterviews.filter(
-    (interview) => interview.status !== "Scheduled" || new Date(interview.scheduled_date) <= new Date(),
+    (interview) => !interview.scheduled_date || new Date(interview.scheduled_date) <= new Date(),
   )
 
   return (
@@ -60,9 +72,11 @@ export function InterviewsPageView() {
           <h1 className="text-3xl font-bold text-balance">Interviews</h1>
           <p className="text-muted-foreground text-pretty">Track all your interview rounds and their outcomes.</p>
         </div>
-        <Button onClick={() => setShowForm(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          Add Interview
+        <Button asChild>
+          <Link href="/dashboard/interviews/new">
+            <Plus className="h-4 w-4 mr-2" />
+            Add Interview
+          </Link>
         </Button>
       </div>
 
@@ -98,9 +112,11 @@ export function InterviewsPageView() {
               <div className="text-muted-foreground">
                 {searchTerm ? "No interviews match your search" : "No interviews yet"}
               </div>
-              <Button onClick={() => setShowForm(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Your First Interview
+              <Button asChild>
+                <Link href="/dashboard/interviews/new">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Your First Interview
+                </Link>
               </Button>
             </div>
           </CardContent>
@@ -115,34 +131,51 @@ export function InterviewsPageView() {
                   <Card key={interview.id}>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span>{interview.round_name}</span>
-                        <Badge className={statusColors[interview.status]} variant="secondary">
-                          {interview.status}
-                        </Badge>
+                        <span>Round {interview.round_number}</span>
+                        {interview.result && (
+                          <Badge className={resultColors[interview.result]} variant="secondary">
+                            {interview.result}
+                          </Badge>
+                        )}
                       </CardTitle>
-                      {interview.interviewer_name && (
-                        <CardDescription>with {interview.interviewer_name}</CardDescription>
+                      {interview.interviewer_names && (
+                        <CardDescription>with {interview.interviewer_names}</CardDescription>
                       )}
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {new Date(interview.scheduled_date).toLocaleDateString()}
-                        </div>
-                        {interview.scheduled_time && (
+                        {interview.scheduled_date && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {new Date(interview.scheduled_date).toLocaleString()}
+                          </div>
+                        )}
+                        {interview.duration_minutes && (
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="h-4 w-4 mr-2" />
-                            {interview.scheduled_time}
+                            {interview.duration_minutes} minutes
                           </div>
                         )}
-                        {interview.location && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {interview.location}
-                          </div>
+                        {interview.notes && (
+                          <p className="text-sm text-muted-foreground mt-2">{interview.notes}</p>
                         )}
-                        {interview.notes && <p className="text-sm text-muted-foreground mt-2">{interview.notes}</p>}
+                      </div>
+                      <div className="flex justify-end space-x-1 mt-4">
+                        {interview.application_id && (
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/dashboard/applications/${interview.application_id}`}>
+                              <LinkIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/interviews/${interview.id}/edit`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(interview.id)}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -159,34 +192,51 @@ export function InterviewsPageView() {
                   <Card key={interview.id} className="opacity-75">
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
-                        <span>{interview.round_name}</span>
-                        <Badge className={statusColors[interview.status]} variant="secondary">
-                          {interview.status}
-                        </Badge>
+                        <span>Round {interview.round_number}</span>
+                        {interview.result && (
+                          <Badge className={resultColors[interview.result]} variant="secondary">
+                            {interview.result}
+                          </Badge>
+                        )}
                       </CardTitle>
-                      {interview.interviewer_name && (
-                        <CardDescription>with {interview.interviewer_name}</CardDescription>
+                      {interview.interviewer_names && (
+                        <CardDescription>with {interview.interviewer_names}</CardDescription>
                       )}
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <Calendar className="h-4 w-4 mr-2" />
-                          {new Date(interview.scheduled_date).toLocaleDateString()}
-                        </div>
-                        {interview.scheduled_time && (
+                        {interview.scheduled_date && (
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4 mr-2" />
+                            {new Date(interview.scheduled_date).toLocaleString()}
+                          </div>
+                        )}
+                        {interview.duration_minutes && (
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Clock className="h-4 w-4 mr-2" />
-                            {interview.scheduled_time}
+                            {interview.duration_minutes} minutes
                           </div>
                         )}
-                        {interview.location && (
-                          <div className="flex items-center text-sm text-muted-foreground">
-                            <MapPin className="h-4 w-4 mr-2" />
-                            {interview.location}
-                          </div>
+                        {interview.notes && (
+                          <p className="text-sm text-muted-foreground mt-2">{interview.notes}</p>
                         )}
-                        {interview.notes && <p className="text-sm text-muted-foreground mt-2">{interview.notes}</p>}
+                      </div>
+                      <div className="flex justify-end space-x-1 mt-4">
+                        {interview.application_id && (
+                          <Button variant="ghost" size="icon" asChild>
+                            <Link href={`/dashboard/applications/${interview.application_id}`}>
+                              <LinkIcon className="h-4 w-4" />
+                            </Link>
+                          </Button>
+                        )}
+                        <Button variant="ghost" size="icon" asChild>
+                          <Link href={`/dashboard/interviews/${interview.id}/edit`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(interview.id)}>
+                          <Trash className="h-4 w-4" />
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>
@@ -195,16 +245,6 @@ export function InterviewsPageView() {
             </div>
           )}
         </div>
-      )}
-
-      {showForm && (
-        <InterviewRoundForm
-          onClose={() => setShowForm(false)}
-          onSuccess={() => {
-            setShowForm(false)
-            fetchInterviews()
-          }}
-        />
       )}
     </div>
   )

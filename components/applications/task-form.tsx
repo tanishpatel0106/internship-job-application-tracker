@@ -43,7 +43,8 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
       const response = await fetch("/api/applications")
       if (response.ok) {
         const data = await response.json()
-        setApplications(data)
+        // The applications API wraps the array in a `data` property
+        setApplications(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error)
@@ -110,7 +111,7 @@ export function TaskForm({ applicationId, initialData, onComplete, onCancel }: T
                   <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
-                      {app.position} at {app.company}
+                      {app.position_title} at {app.company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>

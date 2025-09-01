@@ -13,5 +13,7 @@ export default async function SettingsPage() {
     redirect("/auth/login")
   }
 
-  return <SettingsPageView user={user} />
+  const { data: profile } = await supabase.from("profiles").select("*").eq("id", user.id).single()
+
+  return <SettingsPageView user={user} profile={profile} />
 }

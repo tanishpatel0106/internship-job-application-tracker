@@ -9,16 +9,42 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { User, Shield, Download, Upload } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
+import type { Profile } from "@/lib/types"
 
 interface SettingsPageViewProps {
   user: SupabaseUser
+  profile: Profile | null
 }
 
-export function SettingsPageView({ user }: SettingsPageViewProps) {
+export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
   const [isUpdating, setIsUpdating] = useState(false)
+  const [fullName, setFullName] = useState(profile?.full_name || "")
 
-  const getInitials = (email: string) => {
-    return email.split("@")[0].slice(0, 2).toUpperCase()
+  const getInitials = (text: string) => {
+    return text
+      .split(/\s+|@/)
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((s) => s[0])
+      .join("")
+      .toUpperCase()
+  }
+
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsUpdating(true)
+    try {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name: fullName }),
+      })
+      if (!res.ok) {
+        console.error("Failed to update profile")
+      }
+    } finally {
+      setIsUpdating(false)
+    }
   }
 
   const handleExportData = async () => {
@@ -59,10 +85,13 @@ export function SettingsPageView({ user }: SettingsPageViewProps) {
           <CardContent className="space-y-6">
             <div className="flex items-center space-x-4">
               <Avatar className="h-16 w-16">
-                <AvatarFallback className="text-lg">{getInitials(user.email || "")}</AvatarFallback>
+                <AvatarFallback className="text-lg">
+                  {getInitials(fullName || user.email || "")}
+                </AvatarFallback>
               </Avatar>
               <div>
-                <h3 className="font-medium">{user.email}</h3>
+                <h3 className="font-medium">{fullName || user.email}</h3>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
                 <p className="text-sm text-muted-foreground">
                   Member since {new Date(user.created_at).toLocaleDateString()}
                 </p>
@@ -71,7 +100,12 @@ export function SettingsPageView({ user }: SettingsPageViewProps) {
 
             <Separator />
 
-            <div className="grid gap-4">
+            <form onSubmit={handleUpdateProfile} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="full_name">Full Name</Label>
+                <Input id="full_name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input id="email" type="email" value={user.email || ""} disabled className="bg-muted" />
@@ -79,7 +113,11 @@ export function SettingsPageView({ user }: SettingsPageViewProps) {
                   Email address cannot be changed. Contact support if you need to update this.
                 </p>
               </div>
-            </div>
+
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating ? "Saving..." : "Save Changes"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 

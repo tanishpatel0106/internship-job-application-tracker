@@ -19,7 +19,7 @@ export const contactSchema = z.object({
   position: z.string().optional(),
   company: z.string().optional(),
   notes: z.string().optional(),
-  application_id: z.string().uuid().optional(),
+  application_id: z.string().uuid().optional().nullable(),
 })
 
 export const interviewRoundSchema = z.object({

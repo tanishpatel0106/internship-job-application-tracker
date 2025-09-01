@@ -44,7 +44,10 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
       const response = await fetch("/api/applications")
       if (response.ok) {
         const data = await response.json()
-        setApplications(data)
+        // The applications API returns an object with a `data` property
+        // rather than a raw array of applications. Ensure we always set
+        // an array to avoid runtime errors when mapping.
+        setApplications(Array.isArray(data) ? data : data.data || [])
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error)
@@ -81,7 +84,10 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
         onComplete()
       } else {
         const errorData = await response.json()
-        setError(errorData.error || "Failed to save contact")
+        const message = Array.isArray(errorData.error)
+          ? errorData.error.map((e: any) => e.message).join(", ")
+          : errorData.error
+        setError(message || "Failed to save contact")
       }
     } catch (error) {
       setError("An unexpected error occurred")
@@ -112,7 +118,7 @@ export function ContactForm({ applicationId, initialData, onComplete, onCancel }
                   <SelectItem value="default">No application</SelectItem>
                   {applications.map((app) => (
                     <SelectItem key={app.id} value={app.id}>
-                      {app.position} at {app.company}
+                      {app.position_title} - {app.company_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
