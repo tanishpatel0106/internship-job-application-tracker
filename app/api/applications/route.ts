@@ -19,12 +19,13 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const search = searchParams.get("search")
     const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "10")
-    const offset = (page - 1) * limit
+    const limitParam = searchParams.get("limit")
+    const limit = limitParam === "all" ? null : Number.parseInt(limitParam || "10")
+    const offset = limit ? (page - 1) * limit : 0
 
     let query = supabase
       .from("applications")
-      .select("*")
+      .select("*", { count: "exact" })
       .eq("user_id", user.id)
       .order("application_date", { ascending: false })
 
@@ -36,7 +37,9 @@ export async function GET(request: NextRequest) {
       query = query.or(`company_name.ilike.%${search}%,position_title.ilike.%${search}%`)
     }
 
-    const { data, error, count } = await query.range(offset, offset + limit - 1)
+    const { data, error, count } = limit
+      ? await query.range(offset, offset + limit - 1)
+      : await query
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
@@ -46,9 +49,9 @@ export async function GET(request: NextRequest) {
       data,
       pagination: {
         page,
-        limit,
+        limit: limit ?? count ?? 0,
         total: count || 0,
-        totalPages: Math.ceil((count || 0) / limit),
+        totalPages: limit ? Math.ceil((count || 0) / limit) : 1,
       },
     })
   } catch (error) {
