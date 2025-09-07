@@ -12,6 +12,17 @@ export const applicationSchema = z.object({
   notes: z.string().optional(),
 })
 
+export const applicationStatusSchema = z.object({
+  status: z.enum([
+    "Applied",
+    "Interview Scheduled",
+    "Interview Completed",
+    "Offer Received",
+    "Rejected",
+    "Withdrawn",
+  ]),
+})
+
 export const contactSchema = z.object({
   name: z.string().min(1, "Name is required"),
   email: z.string().email().optional().or(z.literal("")),

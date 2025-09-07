@@ -3,15 +3,9 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
-import { MoreHorizontal, Edit, Trash2, Eye } from "lucide-react"
+import { Edit, Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -81,6 +75,21 @@ export function ApplicationsTable() {
     }
   }
 
+  const handleStatusChange = async (id: string, status: Application["status"]) => {
+    try {
+      const response = await fetch(`/api/applications/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status }),
+      })
+      if (response.ok) {
+        fetchApplications()
+      }
+    } catch (error) {
+      console.error("Failed to update status:", error)
+    }
+  }
+
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString())
     params.set("page", page.toString())
@@ -138,7 +147,7 @@ export function ApplicationsTable() {
                 <TableHead>Applied Date</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Location</TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-[150px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -155,38 +164,53 @@ export function ApplicationsTable() {
                   <TableCell>{application.company_name}</TableCell>
                   <TableCell>{new Date(application.application_date).toLocaleDateString()}</TableCell>
                   <TableCell>
-                    <Badge className={statusColors[application.status]} variant="secondary">
-                      {application.status}
-                    </Badge>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Badge
+                          className={`${statusColors[application.status]} cursor-pointer`}
+                          variant="secondary"
+                        >
+                          {application.status}
+                        </Badge>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="start">
+                        {Object.keys(statusColors).map((status) => (
+                          <DropdownMenuItem
+                            key={status}
+                            onClick={() =>
+                              handleStatusChange(
+                                application.id,
+                                status as Application["status"]
+                              )
+                            }
+                          >
+                            {status}
+                          </DropdownMenuItem>
+                        ))}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </TableCell>
                   <TableCell>{application.location || "—"}</TableCell>
                   <TableCell>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" className="h-8 w-8 p-0">
-                          <MoreHorizontal className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end">
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/applications/${application.id}/details`}>
-                            <Eye className="mr-2 h-4 w-4" />
-                            View Details
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem asChild>
-                          <Link href={`/dashboard/applications/${application.id}/edit`}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </Link>
-                        </DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem onClick={() => handleDelete(application.id)} className="text-red-600">
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                    <div className="flex items-center justify-end space-x-2">
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/applications/${application.id}/details`}>
+                          <Eye className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" size="icon" asChild>
+                        <Link href={`/dashboard/applications/${application.id}/edit`}>
+                          <Edit className="h-4 w-4" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(application.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-red-600" />
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
