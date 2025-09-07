@@ -43,6 +43,8 @@ export function ApplicationsTable() {
     setIsLoading(true)
     try {
       const params = new URLSearchParams(searchParams.toString())
+      params.set("limit", "all")
+      params.delete("page")
       const response = await fetch(`/api/applications?${params.toString()}`)
       if (response.ok) {
         const data = await response.json()
