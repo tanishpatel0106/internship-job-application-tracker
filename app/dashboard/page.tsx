@@ -3,6 +3,7 @@ import { redirect } from "next/navigation"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { ApplicationsChart } from "@/components/dashboard/applications-chart"
 import { ApplicationsTimeseriesChart } from "@/components/dashboard/applications-timeseries-chart"
+import { ApplicationsFlowDiagram } from "@/components/dashboard/applications-flow-diagram"
 import { RecentApplications } from "@/components/dashboard/recent-applications"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks"
@@ -32,6 +33,10 @@ export default async function DashboardPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <ApplicationsChart />
         <ApplicationsTimeseriesChart />
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        <ApplicationsFlowDiagram />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
