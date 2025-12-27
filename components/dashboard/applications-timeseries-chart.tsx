@@ -110,9 +110,9 @@ export function ApplicationsTimeseriesChart() {
               color: "var(--chart-2)",
             },
           }}
-          className="h-[300px]"
+          className="h-[340px] w-full aspect-auto"
         >
-          <LineChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 0 }}>
+          <LineChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"

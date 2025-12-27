@@ -86,11 +86,19 @@ export function ApplicationsChart() {
               label: "Applications",
             },
           }}
-          className="h-[300px]"
+          className="h-[340px] w-full aspect-auto"
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={data} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+              <Pie
+                data={data}
+                cx="50%"
+                cy="50%"
+                innerRadius="60%"
+                outerRadius="90%"
+                paddingAngle={4}
+                dataKey="value"
+              >
                 {data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
