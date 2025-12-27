@@ -55,13 +55,14 @@ export async function GET() {
       {} as Record<string, number>,
     )
 
+    const progressedCount = Math.max(0, totalApplications - (statusCounts["Applied"] || 0))
+
     const stats = {
       totalApplications,
       pendingTasks: pendingTasks || 0,
       upcomingInterviews: upcomingInterviews || 0,
       statusBreakdown: statusCounts,
-      responseRate:
-        totalApplications > 0 ? Math.round(((statusCounts["Interview Scheduled"] || 0) / totalApplications) * 100) : 0,
+      responseRate: totalApplications > 0 ? Math.round((progressedCount / totalApplications) * 100) : 0,
     }
 
     return NextResponse.json(stats)
