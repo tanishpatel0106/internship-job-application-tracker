@@ -2,7 +2,6 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useEffect, useMemo, useState } from "react"
-import { ResponsiveContainer, Sankey, Tooltip } from "recharts"
 
 const COLORS = {
   Applied: "#3b82f6",
@@ -11,7 +10,6 @@ const COLORS = {
   "Offer Received": "#22c55e",
   Rejected: "#ef4444",
   Withdrawn: "#6b7280",
-  "Rejected After Interview": "#dc2626",
 }
 
 type ApplicationFlowResponse = {
@@ -28,17 +26,6 @@ type ApplicationFlowResponse = {
   }
 }
 
-type FlowNode = {
-  name: string
-  color: string
-}
-
-type FlowLink = {
-  source: number
-  target: number
-  value: number
-}
-
 const EMPTY_FLOW: ApplicationFlowResponse = {
   stages: {
     applied: 0,
@@ -51,21 +38,6 @@ const EMPTY_FLOW: ApplicationFlowResponse = {
     withdrawn: 0,
     rejectedAfterInterview: 0,
   },
-}
-
-const SankeyNode = ({ x, y, width, height, index, payload }: any) => {
-  const fill = payload.color || "#94a3b8"
-  const labelX = x + width + 8
-  const labelY = y + height / 2
-
-  return (
-    <g key={`node-${index}`}>
-      <rect x={x} y={y} width={width} height={height} fill={fill} rx={4} />
-      <text x={labelX} y={labelY} textAnchor="start" dominantBaseline="middle" fill="#64748b">
-        {payload.name}
-      </text>
-    </g>
-  )
 }
 
 export function ApplicationsFlowDiagram() {
@@ -90,50 +62,18 @@ export function ApplicationsFlowDiagram() {
     fetchFlow()
   }, [])
 
-  const rejectedAfterInterview = flow.dropOffs.rejectedAfterInterview
-  const rejectedBeforeInterview = Math.max(0, flow.dropOffs.rejected - rejectedAfterInterview)
-  const totalApplications =
-    flow.stages.applied +
-    flow.stages.interviewScheduled +
-    flow.stages.interviewCompleted +
-    flow.stages.offerReceived +
-    flow.dropOffs.rejected +
-    flow.dropOffs.withdrawn
-
-  const interviewScheduledReached = Math.max(
-    0,
-    totalApplications - flow.stages.applied - flow.dropOffs.rejected - flow.dropOffs.withdrawn,
-  )
-  const interviewCompletedReached = Math.max(0, flow.stages.interviewCompleted + flow.stages.offerReceived)
-
-  const sankeyData = useMemo(() => {
-    const nodes: FlowNode[] = [
-      { name: "Applied", color: COLORS.Applied },
-      { name: "Interview Scheduled", color: COLORS["Interview Scheduled"] },
-      { name: "Interview Completed", color: COLORS["Interview Completed"] },
-      { name: "Offer Received", color: COLORS["Offer Received"] },
-      { name: "Rejected", color: COLORS.Rejected },
-      { name: "Withdrawn", color: COLORS.Withdrawn },
-      { name: "Rejected After Interview", color: COLORS["Rejected After Interview"] },
-    ]
-
-    const links: FlowLink[] = [
-      { source: 0, target: 1, value: interviewScheduledReached },
-      { source: 0, target: 4, value: rejectedBeforeInterview },
-      { source: 0, target: 5, value: flow.dropOffs.withdrawn },
-      { source: 1, target: 2, value: interviewCompletedReached },
-      { source: 2, target: 3, value: flow.stages.offerReceived },
-      { source: 2, target: 6, value: rejectedAfterInterview },
-    ].filter((link) => link.value > 0)
-
-    return { nodes, links }
-  }, [flow, interviewCompletedReached, interviewScheduledReached, rejectedAfterInterview, rejectedBeforeInterview])
-
   const totalCount = useMemo(() => {
     const stageTotal = Object.values(flow.stages).reduce((sum, value) => sum + value, 0)
     const dropOffTotal = Object.values(flow.dropOffs).reduce((sum, value) => sum + value, 0)
     return stageTotal + dropOffTotal
   }, [flow])
+
+  const stageItems = [
+    { label: "Applied", value: flow.stages.applied, color: COLORS.Applied },
+    { label: "Interview Scheduled", value: flow.stages.interviewScheduled, color: COLORS["Interview Scheduled"] },
+    { label: "Interview Completed", value: flow.stages.interviewCompleted, color: COLORS["Interview Completed"] },
+    { label: "Offer Received", value: flow.stages.offerReceived, color: COLORS["Offer Received"] },
+  ]
 
   const dropOffItems = [
     { label: "Rejected", value: flow.dropOffs.rejected, color: COLORS.Rejected },
@@ -141,7 +81,7 @@ export function ApplicationsFlowDiagram() {
     {
       label: "Rejected After Interview",
       value: flow.dropOffs.rejectedAfterInterview,
-      color: COLORS["Rejected After Interview"],
+      color: COLORS.Rejected,
     },
   ]
 
@@ -153,7 +93,7 @@ export function ApplicationsFlowDiagram() {
           <CardDescription>How applications are moving through each stage</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[320px] flex items-center justify-center">
+          <div className="h-[260px] flex items-center justify-center">
             <div className="animate-pulse text-muted-foreground">Loading flow...</div>
           </div>
         </CardContent>
@@ -169,7 +109,7 @@ export function ApplicationsFlowDiagram() {
           <CardDescription>How applications are moving through each stage</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="h-[320px] flex items-center justify-center">
+          <div className="h-[260px] flex items-center justify-center">
             <div className="text-muted-foreground">No application flow data yet</div>
           </div>
         </CardContent>
@@ -181,38 +121,37 @@ export function ApplicationsFlowDiagram() {
     <Card>
       <CardHeader>
         <CardTitle>Application Flow</CardTitle>
-        <CardDescription>Stage transitions and drop-offs for your pipeline</CardDescription>
+        <CardDescription>Stage progression and drop-offs for your pipeline</CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid gap-6 lg:grid-cols-[2fr,1fr]">
-          <div className="h-[320px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <Sankey data={sankeyData} nodePadding={28} nodeWidth={12} node={<SankeyNode />}> 
-                <Tooltip />
-              </Sankey>
-            </ResponsiveContainer>
-          </div>
-          <div className="space-y-4">
-            <div className="rounded-lg border bg-muted/30 p-4">
-              <div className="text-sm font-semibold text-muted-foreground">Drop-offs</div>
-              <div className="mt-4 space-y-3">
-                {dropOffItems.map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                      <span>{item.label}</span>
-                    </div>
-                    <div className="text-base font-semibold">{item.value}</div>
-                  </div>
-                ))}
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-4">
+            {stageItems.map((item, index) => (
+              <div key={item.label} className="relative rounded-lg border bg-card p-4 shadow-sm">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span>{item.label}</span>
+                </div>
+                <div className="mt-3 text-2xl font-semibold">{item.value}</div>
+                {index < stageItems.length - 1 ? (
+                  <span className="absolute right-4 top-4 text-muted-foreground">→</span>
+                ) : null}
               </div>
-            </div>
-            <div className="rounded-lg border bg-card p-4">
-              <div className="text-sm text-muted-foreground">Applications tracked</div>
-              <div className="mt-2 text-2xl font-semibold">{totalApplications}</div>
-              <p className="mt-1 text-xs text-muted-foreground">
-                Flow counts are inferred from current statuses and interview outcomes.
-              </p>
+            ))}
+          </div>
+
+          <div className="rounded-lg border bg-muted/30 p-4">
+            <div className="text-sm font-semibold text-muted-foreground">Drop-offs</div>
+            <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+              {dropOffItems.map((item) => (
+                <div key={item.label} className="rounded-lg border bg-card p-3">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                    <span>{item.label}</span>
+                  </div>
+                  <div className="mt-2 text-xl font-semibold">{item.value}</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
