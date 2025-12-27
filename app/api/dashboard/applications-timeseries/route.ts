@@ -29,6 +29,7 @@ export async function GET() {
 
     const counts = new Map<string, number>()
     let todayCount = 0
+    let beforeCutoffCount = 0
 
     for (const application of applications) {
       if (!application.application_date) {
@@ -46,15 +47,27 @@ export async function GET() {
       }
 
       if (applicationDate < cutoffDate) {
+        beforeCutoffCount += 1
         continue
       }
 
       counts.set(dateKey, (counts.get(dateKey) || 0) + 1)
     }
 
-    const series = Array.from(counts.entries())
-      .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
-      .map(([date, count]) => ({ date, count }))
+    const series: Array<{ date: string; count: number; cumulative: number }> = []
+    const cursor = new Date(cutoffDate)
+    const endDate = new Date()
+    endDate.setHours(0, 0, 0, 0)
+
+    let runningTotal = beforeCutoffCount
+
+    while (cursor <= endDate) {
+      const dateKey = cursor.toISOString().slice(0, 10)
+      const count = counts.get(dateKey) || 0
+      runningTotal += count
+      series.push({ date: dateKey, count, cumulative: runningTotal })
+      cursor.setDate(cursor.getDate() + 1)
+    }
 
     return NextResponse.json({ todayCount, series })
   } catch (error) {

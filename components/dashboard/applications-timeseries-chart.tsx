@@ -31,6 +31,7 @@ const formatTooltipDate = (value: string) => {
 type TimeseriesPoint = {
   date: string
   count: number
+  cumulative: number
 }
 
 export function ApplicationsTimeseriesChart() {
@@ -101,16 +102,26 @@ export function ApplicationsTimeseriesChart() {
         <ChartContainer
           config={{
             count: {
-              label: "Applications",
+              label: "Daily",
               color: "var(--chart-1)",
+            },
+            cumulative: {
+              label: "Cumulative",
+              color: "var(--chart-2)",
             },
           }}
           className="h-[300px]"
         >
-          <LineChart data={data} margin={{ left: 12, right: 12, top: 10 }}>
+          <LineChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 0 }}>
             <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis dataKey="date" tickFormatter={formatAxisDate} tickLine={false} axisLine={false} />
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={32} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={formatAxisDate}
+              tickLine={false}
+              axisLine={false}
+              minTickGap={24}
+            />
+            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
             <ChartTooltip content={<ChartTooltipContent labelFormatter={formatTooltipDate} />} />
             <Line
               type="monotone"
@@ -119,6 +130,14 @@ export function ApplicationsTimeseriesChart() {
               strokeWidth={2}
               dot={{ r: 3, fill: "var(--color-count)" }}
               activeDot={{ r: 5 }}
+            />
+            <Line
+              type="monotone"
+              dataKey="cumulative"
+              stroke="var(--color-cumulative)"
+              strokeWidth={2}
+              dot={false}
+              activeDot={{ r: 4 }}
             />
           </LineChart>
         </ChartContainer>
