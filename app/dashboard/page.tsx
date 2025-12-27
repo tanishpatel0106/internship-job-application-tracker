@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { ApplicationsChart } from "@/components/dashboard/applications-chart"
+import { ApplicationsFlow } from "@/components/dashboard/applications-flow"
 import { RecentApplications } from "@/components/dashboard/recent-applications"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks"
@@ -29,13 +30,17 @@ export default async function DashboardPage() {
       <DashboardStats />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ApplicationsFlow />
         <ApplicationsChart />
-        <QuickActions />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentApplications />
+        <QuickActions />
         <UpcomingTasks />
+      </div>
+
+      <div>
+        <RecentApplications />
       </div>
     </div>
   )
