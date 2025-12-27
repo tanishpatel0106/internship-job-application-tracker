@@ -24,7 +24,7 @@ export async function GET() {
 
     const todayKey = new Date().toISOString().slice(0, 10)
     const cutoffDate = new Date()
-    cutoffDate.setDate(cutoffDate.getDate() - 89)
+    cutoffDate.setDate(cutoffDate.getDate() - 29)
     cutoffDate.setHours(0, 0, 0, 0)
 
     const counts = new Map<string, number>()

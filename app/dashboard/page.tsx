@@ -7,6 +7,7 @@ import { ApplicationsFlowDiagram } from "@/components/dashboard/applications-flo
 import { RecentApplications } from "@/components/dashboard/recent-applications"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks"
+import { UpcomingCalendar } from "@/components/dashboard/upcoming-calendar"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -35,8 +36,11 @@ export default async function DashboardPage() {
         <ApplicationsTimeseriesChart />
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
-        <ApplicationsFlowDiagram />
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
+          <ApplicationsFlowDiagram />
+        </div>
+        <UpcomingCalendar />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

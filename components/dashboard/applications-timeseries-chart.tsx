@@ -63,7 +63,7 @@ export function ApplicationsTimeseriesChart() {
       <Card>
         <CardHeader>
           <CardTitle>Applications Over Time</CardTitle>
-          <CardDescription>Daily application volume for the last 90 days</CardDescription>
+          <CardDescription>Daily application volume for the last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -79,7 +79,7 @@ export function ApplicationsTimeseriesChart() {
       <Card>
         <CardHeader>
           <CardTitle>Applications Over Time</CardTitle>
-          <CardDescription>Daily application volume for the last 90 days</CardDescription>
+          <CardDescription>Daily application volume for the last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -95,7 +95,7 @@ export function ApplicationsTimeseriesChart() {
       <CardHeader>
         <CardTitle>Applications Over Time</CardTitle>
         <CardDescription>
-          Daily application volume for the last 90 days · Today: {todayCount}
+          Daily application volume for the last 30 days · Today: {todayCount}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -121,11 +121,26 @@ export function ApplicationsTimeseriesChart() {
               axisLine={false}
               minTickGap={24}
             />
-            <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+            <YAxis
+              yAxisId="left"
+              allowDecimals={false}
+              tickLine={false}
+              axisLine={false}
+              width={36}
+            />
+            <YAxis
+              yAxisId="right"
+              orientation="right"
+              allowDecimals={false}
+              tickLine={false}
+              axisLine={false}
+              width={48}
+            />
             <ChartTooltip content={<ChartTooltipContent labelFormatter={formatTooltipDate} />} />
             <Line
               type="monotone"
               dataKey="count"
+              yAxisId="left"
               stroke="var(--color-count)"
               strokeWidth={2}
               dot={{ r: 3, fill: "var(--color-count)" }}
@@ -134,6 +149,7 @@ export function ApplicationsTimeseriesChart() {
             <Line
               type="monotone"
               dataKey="cumulative"
+              yAxisId="right"
               stroke="var(--color-cumulative)"
               strokeWidth={2}
               dot={false}

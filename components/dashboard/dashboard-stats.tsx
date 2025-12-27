@@ -9,6 +9,7 @@ interface DashboardStatsData {
   pendingTasks: number
   upcomingInterviews: number
   responseRate: number
+  statusBreakdown?: Record<string, number>
 }
 
 export function DashboardStats() {
@@ -17,6 +18,7 @@ export function DashboardStats() {
     pendingTasks: 0,
     upcomingInterviews: 0,
     responseRate: 0,
+    statusBreakdown: {},
   })
   const [isLoading, setIsLoading] = useState(true)
 
@@ -38,12 +40,25 @@ export function DashboardStats() {
     fetchStats()
   }, [])
 
+  const statusBreakdown = stats.statusBreakdown || {}
+  const rejectedCount = statusBreakdown["Rejected"] || 0
+  const withdrawnCount = statusBreakdown["Withdrawn"] || 0
+  const offerCount = statusBreakdown["Offer Received"] || 0
+  const interviewCount =
+    (statusBreakdown["Interview Scheduled"] || 0) + (statusBreakdown["Interview Completed"] || 0)
+  const activePipeline = Math.max(0, stats.totalApplications - rejectedCount - withdrawnCount)
   const statCards = [
     {
       title: "Total Applications",
       value: stats.totalApplications,
       icon: FileText,
       description: "Applications submitted",
+    },
+    {
+      title: "Active Pipeline",
+      value: activePipeline,
+      icon: TrendingUp,
+      description: "Still in progress",
     },
     {
       title: "Pending Tasks",
@@ -58,17 +73,29 @@ export function DashboardStats() {
       description: "Scheduled interviews",
     },
     {
+      title: "Interview Stages",
+      value: interviewCount,
+      icon: Calendar,
+      description: "Scheduled + completed",
+    },
+    {
+      title: "Offers Received",
+      value: offerCount,
+      icon: FileText,
+      description: "Offers in hand",
+    },
+    {
       title: "Response Rate",
       value: `${stats.responseRate}%`,
       icon: TrendingUp,
-      description: "Interview invitations",
+      description: "Progressed beyond applied",
     },
   ]
 
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6">
+        {Array.from({ length: 6 }).map((_, i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -87,7 +114,7 @@ export function DashboardStats() {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-6 gap-6">
       {statCards.map((stat) => {
         const Icon = stat.icon
         return (
