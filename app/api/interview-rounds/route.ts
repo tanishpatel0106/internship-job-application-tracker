@@ -1,5 +1,5 @@
+import { sendInterviewScheduledEmail } from "@/lib/email/send"
 import { createClient } from "@/lib/supabase/server"
-import { queueReminderEmail } from "@/lib/email/reminder-preferences"
 import { interviewRoundSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -69,14 +69,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
-    if (validatedData.scheduled_date) {
+    if (validatedData.scheduled_date && user.email) {
       const { data: preferences } = await supabase
         .from("profiles")
         .select("interview_reminders_enabled, task_reminders_enabled, application_updates_enabled")
         .eq("id", user.id)
         .single()
 
-      await queueReminderEmail({ preferences, type: "interview" })
+      const { data: application } = await supabase
+        .from("applications")
+        .select("company_name")
+        .eq("id", validatedData.application_id)
+        .eq("user_id", user.id)
+        .single()
+
+      try {
+        await sendInterviewScheduledEmail({
+          to: user.email,
+          companyName: application?.company_name ?? "your interview",
+          scheduledDate: validatedData.scheduled_date,
+          preferences,
+        })
+      } catch (emailError) {
+        console.error("Failed to send interview scheduled email", emailError)
+      }
     }
 
     return NextResponse.json(data, { status: 201 })

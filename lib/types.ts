@@ -46,6 +46,8 @@ export interface InterviewRound {
   round_number: number
   interview_type: "Phone Screen" | "Technical" | "Behavioral" | "Panel" | "Final" | "Other"
   scheduled_date?: string
+  reminder_24h_sent_at?: string
+  reminder_48h_sent_at?: string
   duration_minutes?: number
   interviewer_names?: string
   notes?: string

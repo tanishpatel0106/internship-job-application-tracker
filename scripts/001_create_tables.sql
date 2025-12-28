@@ -50,6 +50,8 @@ CREATE TABLE IF NOT EXISTS public.interview_rounds (
   round_number INTEGER NOT NULL,
   interview_type TEXT NOT NULL CHECK (interview_type IN ('Phone Screen', 'Technical', 'Behavioral', 'Panel', 'Final', 'Other')),
   scheduled_date TIMESTAMP WITH TIME ZONE,
+  reminder_24h_sent_at TIMESTAMP WITH TIME ZONE,
+  reminder_48h_sent_at TIMESTAMP WITH TIME ZONE,
   duration_minutes INTEGER,
   interviewer_names TEXT,
   notes TEXT,
