@@ -9,6 +9,8 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Search, Calendar, CheckCircle2, Pencil, Trash, Link as LinkIcon } from "lucide-react"
 import Link from "next/link"
 import type { Task } from "@/lib/types"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const priorityColors = {
   Low: "bg-green-100 text-green-800",
@@ -20,6 +22,7 @@ export function TasksPageView() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const timeZone = useProfileTimeZone()
 
   const fetchTasks = async () => {
     setIsLoading(true)
@@ -160,7 +163,7 @@ export function TasksPageView() {
                               {task.due_date && (
                                 <div className="flex items-center text-sm text-muted-foreground">
                                   <Calendar className="h-4 w-4 mr-1" />
-                                  {new Date(task.due_date).toLocaleDateString()}
+                                  {formatDateOnly(task.due_date, timeZone)}
                                 </div>
                               )}
                               {task.application_id && (
@@ -216,7 +219,7 @@ export function TasksPageView() {
                               {task.due_date && (
                                 <div className="flex items-center text-sm text-muted-foreground">
                                   <Calendar className="h-4 w-4 mr-1" />
-                                  {new Date(task.due_date).toLocaleDateString()}
+                                  {formatDateOnly(task.due_date, timeZone)}
                                 </div>
                               )}
                               {task.application_id && (

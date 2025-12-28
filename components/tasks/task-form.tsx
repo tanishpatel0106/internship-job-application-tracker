@@ -29,7 +29,7 @@ export function TaskForm({ onClose, onSuccess, initialData }: TaskFormProps) {
     title: initialData?.title || "",
     description: initialData?.description || "",
     priority: initialData?.priority || "Medium",
-    due_date: initialData?.due_date ? new Date(initialData.due_date).toISOString().split("T")[0] : "",
+    due_date: initialData?.due_date || "",
   })
 
   const handleSubmit = async (e: React.FormEvent) => {

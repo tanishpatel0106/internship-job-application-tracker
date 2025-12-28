@@ -16,7 +16,7 @@ import {
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import type { InterviewRound, Task } from "@/lib/types"
-import { getDateInTimeZone } from "@/lib/date"
+import { getDateFromDateOnly, getDateInTimeZone } from "@/lib/date"
 import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const WEEKS_PER_PAGE = 2
@@ -77,8 +77,8 @@ export function UpcomingCalendar() {
 
     tasks.forEach((task) => {
       if (!task.due_date) return
-      const dueDate = new Date(task.due_date)
-      if (Number.isNaN(dueDate.getTime())) return
+      const dueDate = getDateFromDateOnly(task.due_date, timeZone)
+      if (!dueDate) return
       if (!isWithinInterval(dueDate, { start: range.start, end: range.end })) return
       items.push({
         id: task.id,

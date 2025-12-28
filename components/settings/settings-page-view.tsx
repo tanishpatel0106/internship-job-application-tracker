@@ -12,6 +12,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { User, Shield, Download, Upload, Bell } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { Profile } from "@/lib/types"
+import { formatDateTimeDisplay } from "@/lib/date"
 
 interface SettingsPageViewProps {
   user: SupabaseUser
@@ -136,7 +137,7 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
                 <h3 className="font-medium">{fullName || user.email}</h3>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <p className="text-sm text-muted-foreground">
-                  Member since {new Date(user.created_at).toLocaleDateString()}
+                  Member since {formatDateTimeDisplay(user.created_at, timeZone, { dateStyle: "medium" })}
                 </p>
               </div>
             </div>
@@ -196,7 +197,7 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
               <div>
                 <h4 className="font-medium">Password</h4>
                 <p className="text-sm text-muted-foreground">
-                  Last updated {new Date(user.updated_at || user.created_at).toLocaleDateString()}
+                  Last updated {formatDateTimeDisplay(user.updated_at || user.created_at, timeZone, { dateStyle: "medium" })}
                 </p>
               </div>
               <Button variant="outline" disabled>

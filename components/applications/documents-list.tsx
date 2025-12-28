@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button"
 import { File, Download, Trash2 } from "lucide-react"
 import { useEffect, useState } from "react"
 import type { Document } from "@/lib/types"
+import { formatDateTimeDisplay } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface DocumentsListProps {
   applicationId?: string
@@ -14,6 +16,7 @@ interface DocumentsListProps {
 export function DocumentsList({ applicationId, onDocumentChange }: DocumentsListProps) {
   const [documents, setDocuments] = useState<Document[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
 
   const fetchDocuments = async () => {
     try {
@@ -126,7 +129,11 @@ export function DocumentsList({ applicationId, onDocumentChange }: DocumentsList
                     <div className="font-medium">{document.filename}</div>
                     <div className="text-sm text-muted-foreground">
                       {document.file_size ? formatFileSize(document.file_size) : "Unknown size"} •{" "}
-                      {new Date(document.uploaded_at).toLocaleDateString()}
+                      {formatDateTimeDisplay(document.uploaded_at, timeZone, {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
                     </div>
                   </div>
                 </div>

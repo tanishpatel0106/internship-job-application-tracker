@@ -7,6 +7,8 @@ import { CheckSquare } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import type { Task } from "@/lib/types"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const priorityColors = {
   Low: "bg-gray-100 text-gray-800",
@@ -18,6 +20,7 @@ const priorityColors = {
 export function UpcomingTasks() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
 
   useEffect(() => {
     const fetchTasks = async () => {
@@ -104,7 +107,7 @@ export function UpcomingTasks() {
                   <div className="font-medium">{task.title}</div>
                   {task.due_date && (
                     <div className="text-xs text-muted-foreground">
-                      Due {new Date(task.due_date).toLocaleDateString()}
+                      Due {formatDateOnly(task.due_date, timeZone)}
                     </div>
                   )}
                 </div>

@@ -44,6 +44,50 @@ export const ensureTimeZone = (timeZone?: string | null) => {
   return timeZone || DEFAULT_TIME_ZONE
 }
 
+export const isDateOnlyString = (value: string) => {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value)
+}
+
+export const getTodayDateString = (timeZone: string) => {
+  const now = new Date()
+  const parts = getTimeZoneParts(now, timeZone)
+  return `${parts.year}-${String(parts.month).padStart(2, "0")}-${String(parts.day).padStart(2, "0")}`
+}
+
+const getDateOnlySeed = (dateString: string) => {
+  const [year, month, day] = dateString.split("-").map(Number)
+  if ([year, month, day].some((part) => Number.isNaN(part))) {
+    return null
+  }
+  return new Date(Date.UTC(year, month - 1, day, 12, 0, 0))
+}
+
+export const formatDateOnly = (dateString: string, timeZone: string) => {
+  return formatDateOnlyWithOptions(dateString, timeZone, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+}
+
+export const formatDateOnlyWithOptions = (
+  dateString: string,
+  timeZone: string,
+  options: Intl.DateTimeFormatOptions
+) => {
+  if (!dateString) return ""
+  const date = getDateOnlySeed(dateString)
+  if (!date) return dateString
+  return new Intl.DateTimeFormat("en-US", { timeZone, ...options }).format(date)
+}
+
+export const getDateFromDateOnly = (dateString: string, timeZone: string) => {
+  if (!dateString) return null
+  const date = getDateOnlySeed(dateString)
+  if (!date) return null
+  return getDateInTimeZone(date.toISOString(), timeZone)
+}
+
 export const formatDateTimeForInput = (isoString: string, timeZone: string) => {
   const date = new Date(isoString)
   if (Number.isNaN(date.getTime())) return ""

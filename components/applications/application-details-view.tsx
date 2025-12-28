@@ -26,6 +26,8 @@ import { TasksTab } from "./tasks-tab"
 import { DocumentsTab } from "./documents-tab"
 import { ApplicationTimeline } from "./application-timeline"
 import type { Application } from "@/lib/types"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface ApplicationDetailsViewProps {
   application: Application
@@ -43,6 +45,7 @@ const statusColors = {
 export function ApplicationDetailsView({ application }: ApplicationDetailsViewProps) {
   const router = useRouter()
   const [isDeleting, setIsDeleting] = useState(false)
+  const timeZone = useProfileTimeZone()
 
   const handleDelete = async () => {
     setIsDeleting(true)
@@ -121,7 +124,7 @@ export function ApplicationDetailsView({ application }: ApplicationDetailsViewPr
             </Badge>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <span>Applied {new Date(application.application_date).toLocaleDateString()}</span>
+            <span>Applied {formatDateOnly(application.application_date, timeZone)}</span>
             {application.location && <span>• {application.location}</span>}
             {application.salary_range && <span>• {application.salary_range}</span>}
           </div>

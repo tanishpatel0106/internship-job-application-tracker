@@ -4,29 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
 import { useEffect, useState } from "react"
-
-const formatAxisDate = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleDateString(undefined, { month: "short", day: "numeric" })
-}
-
-const formatTooltipDate = (value: string) => {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
-  return date.toLocaleDateString(undefined, {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  })
-}
+import { formatDateOnlyWithOptions } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 type TimeseriesPoint = {
   date: string
@@ -38,6 +17,17 @@ export function ApplicationsTimeseriesChart() {
   const [data, setData] = useState<TimeseriesPoint[]>([])
   const [todayCount, setTodayCount] = useState(0)
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
+
+  const formatAxisDate = (value: string) =>
+    formatDateOnlyWithOptions(value, timeZone, { month: "short", day: "numeric" })
+  const formatTooltipDate = (value: string) =>
+    formatDateOnlyWithOptions(value, timeZone, {
+      weekday: "short",
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    })
 
   useEffect(() => {
     const fetchData = async () => {

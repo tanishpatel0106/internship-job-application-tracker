@@ -11,6 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { Application } from "@/lib/types"
+import { getTodayDateString } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface ApplicationFormProps {
   initialData?: Application
@@ -20,11 +22,12 @@ export function ApplicationForm({ initialData }: ApplicationFormProps) {
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const timeZone = useProfileTimeZone()
 
   const [formData, setFormData] = useState({
     company_name: initialData?.company_name || "",
     position_title: initialData?.position_title || "",
-    application_date: initialData?.application_date || new Date().toISOString().split("T")[0],
+    application_date: initialData?.application_date || getTodayDateString(timeZone),
     status: initialData?.status || "Applied",
     job_description: initialData?.job_description || "",
     salary_range: initialData?.salary_range || "",
