@@ -3,9 +3,12 @@ import { redirect } from "next/navigation"
 import { DashboardStats } from "@/components/dashboard/dashboard-stats"
 import { ApplicationsChart } from "@/components/dashboard/applications-chart"
 import { ApplicationsTimeseriesChart } from "@/components/dashboard/applications-timeseries-chart"
+import { ApplicationsFlowDiagram } from "@/components/dashboard/applications-flow-diagram"
 import { RecentApplications } from "@/components/dashboard/recent-applications"
 import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks"
+import { UpcomingCalendar } from "@/components/dashboard/upcoming-calendar"
+import { StatusInsights } from "@/components/dashboard/status-insights"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -34,14 +37,23 @@ export default async function DashboardPage() {
         <ApplicationsTimeseriesChart />
       </div>
 
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        <div className="xl:col-span-2">
+          <ApplicationsFlowDiagram />
+        </div>
+        <UpcomingCalendar />
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <RecentApplications />
+        <StatusInsights />
         <UpcomingTasks />
       </div>
 
-      <div className="grid grid-cols-1 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <RecentApplications />
         <QuickActions />
       </div>
+
     </div>
   )
 }
