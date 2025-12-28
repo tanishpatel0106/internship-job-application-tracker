@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { queueReminderEmail } from "@/lib/email/reminder-preferences"
 import { applicationSchema, applicationStatusSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -58,6 +59,14 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
+
+    const { data: preferences } = await supabase
+      .from("profiles")
+      .select("interview_reminders_enabled, task_reminders_enabled, application_updates_enabled")
+      .eq("id", user.id)
+      .single()
+
+    await queueReminderEmail({ preferences, type: "application-update" })
 
     return NextResponse.json(data)
   } catch (error) {

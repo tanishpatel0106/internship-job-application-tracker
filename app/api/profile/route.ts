@@ -41,11 +41,18 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json()
     const validatedData = profileSchema.parse(body)
+    const updates = Object.fromEntries(
+      Object.entries(validatedData).filter(([, value]) => value !== undefined)
+    )
+
+    if (Object.keys(updates).length === 0) {
+      return NextResponse.json({ error: "No profile updates provided" }, { status: 400 })
+    }
 
     const { data, error } = await supabase
       .from("profiles")
       .update({
-        ...validatedData,
+        ...updates,
         updated_at: new Date().toISOString(),
       })
       .eq("id", user.id)

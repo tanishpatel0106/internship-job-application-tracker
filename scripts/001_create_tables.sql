@@ -3,6 +3,9 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   full_name TEXT,
   email TEXT,
+  interview_reminders_enabled BOOLEAN DEFAULT TRUE,
+  task_reminders_enabled BOOLEAN DEFAULT TRUE,
+  application_updates_enabled BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

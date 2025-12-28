@@ -3,11 +3,12 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { User, Shield, Download, Upload } from "lucide-react"
+import { User, Shield, Download, Upload, Bell } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { Profile } from "@/lib/types"
 
@@ -18,7 +19,15 @@ interface SettingsPageViewProps {
 
 export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isUpdatingPreferences, setIsUpdatingPreferences] = useState(false)
   const [fullName, setFullName] = useState(profile?.full_name || "")
+  const [interviewRemindersEnabled, setInterviewRemindersEnabled] = useState(
+    profile?.interview_reminders_enabled ?? true
+  )
+  const [taskRemindersEnabled, setTaskRemindersEnabled] = useState(profile?.task_reminders_enabled ?? true)
+  const [applicationUpdatesEnabled, setApplicationUpdatesEnabled] = useState(
+    profile?.application_updates_enabled ?? true
+  )
 
   const getInitials = (text: string) => {
     return text
@@ -44,6 +53,31 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
       }
     } finally {
       setIsUpdating(false)
+    }
+  }
+
+  const handleUpdatePreferences = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsUpdatingPreferences(true)
+    try {
+      const payload: Record<string, unknown> = {
+        interview_reminders_enabled: interviewRemindersEnabled,
+        task_reminders_enabled: taskRemindersEnabled,
+        application_updates_enabled: applicationUpdatesEnabled,
+      }
+      if (fullName.trim()) {
+        payload.full_name = fullName
+      }
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        console.error("Failed to update reminder preferences")
+      }
+    } finally {
+      setIsUpdatingPreferences(false)
     }
   }
 
@@ -145,6 +179,65 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
               Password management is handled through Supabase authentication. Use the forgot password feature on the
               login page to reset your password.
             </p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Bell className="h-5 w-5 mr-2" />
+              Reminders
+            </CardTitle>
+            <CardDescription>Choose which reminder emails you want to receive.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdatePreferences} className="space-y-4">
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="interview-reminders"
+                  checked={interviewRemindersEnabled}
+                  onCheckedChange={(checked) => setInterviewRemindersEnabled(Boolean(checked))}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="interview-reminders">Interview reminders</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Get notified ahead of scheduled interviews.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="task-reminders"
+                  checked={taskRemindersEnabled}
+                  onCheckedChange={(checked) => setTaskRemindersEnabled(Boolean(checked))}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="task-reminders">Task reminders</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Receive email nudges before task due dates.
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start space-x-3">
+                <Checkbox
+                  id="application-updates"
+                  checked={applicationUpdatesEnabled}
+                  onCheckedChange={(checked) => setApplicationUpdatesEnabled(Boolean(checked))}
+                />
+                <div className="space-y-1">
+                  <Label htmlFor="application-updates">Application updates</Label>
+                  <p className="text-sm text-muted-foreground">
+                    Stay in the loop when application statuses change.
+                  </p>
+                </div>
+              </div>
+
+              <Button type="submit" disabled={isUpdatingPreferences}>
+                {isUpdatingPreferences ? "Saving..." : "Save Preferences"}
+              </Button>
+            </form>
           </CardContent>
         </Card>
 
