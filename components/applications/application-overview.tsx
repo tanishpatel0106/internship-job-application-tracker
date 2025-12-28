@@ -1,11 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Application } from "@/lib/types"
+import { ensureTimeZone, formatDateOnly } from "@/lib/date"
 
 interface ApplicationOverviewProps {
   application: Application
 }
 
 export function ApplicationOverview({ application }: ApplicationOverviewProps) {
+  const timeZone = ensureTimeZone()
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card>
@@ -27,7 +29,7 @@ export function ApplicationOverview({ application }: ApplicationOverviewProps) {
           </div>
           <div>
             <h4 className="font-medium text-sm text-muted-foreground">Applied Date</h4>
-            <p>{new Date(application.application_date).toLocaleDateString()}</p>
+            <p>{formatDateOnly(application.application_date, timeZone)}</p>
           </div>
         </CardContent>
       </Card>

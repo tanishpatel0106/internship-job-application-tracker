@@ -16,6 +16,8 @@ import {
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 import type { InterviewRound, Task } from "@/lib/types"
+import { getDateFromDateOnly, getDateInTimeZone } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const WEEKS_PER_PAGE = 2
 
@@ -35,6 +37,7 @@ export function UpcomingCalendar() {
   const [selectedDate, setSelectedDate] = useState<Date>(new Date())
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date(), { weekStartsOn: 1 }))
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -74,8 +77,8 @@ export function UpcomingCalendar() {
 
     tasks.forEach((task) => {
       if (!task.due_date) return
-      const dueDate = new Date(task.due_date)
-      if (Number.isNaN(dueDate.getTime())) return
+      const dueDate = getDateFromDateOnly(task.due_date, timeZone)
+      if (!dueDate) return
       if (!isWithinInterval(dueDate, { start: range.start, end: range.end })) return
       items.push({
         id: task.id,
@@ -88,8 +91,8 @@ export function UpcomingCalendar() {
 
     interviews.forEach((interview) => {
       if (!interview.scheduled_date) return
-      const scheduledDate = new Date(interview.scheduled_date)
-      if (Number.isNaN(scheduledDate.getTime())) return
+      const scheduledDate = getDateInTimeZone(interview.scheduled_date, timeZone)
+      if (!scheduledDate) return
       if (!isWithinInterval(scheduledDate, { start: range.start, end: range.end })) return
       items.push({
         id: interview.id,
@@ -112,7 +115,7 @@ export function UpcomingCalendar() {
     })
 
     return mapped
-  }, [tasks, interviews, range])
+  }, [tasks, interviews, range, timeZone])
 
   const weeks = useMemo(() => {
     const weekList: Date[][] = []

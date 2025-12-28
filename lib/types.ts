@@ -5,6 +5,7 @@ export interface Profile {
   interview_reminders_enabled?: boolean | null
   task_reminders_enabled?: boolean | null
   application_updates_enabled?: boolean | null
+  time_zone?: string | null
   created_at: string
   updated_at: string
 }
@@ -46,6 +47,8 @@ export interface InterviewRound {
   round_number: number
   interview_type: "Phone Screen" | "Technical" | "Behavioral" | "Panel" | "Final" | "Other"
   scheduled_date?: string
+  reminder_24h_sent_at?: string
+  reminder_48h_sent_at?: string
   duration_minutes?: number
   interviewer_names?: string
   notes?: string

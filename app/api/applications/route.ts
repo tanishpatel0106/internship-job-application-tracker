@@ -1,3 +1,4 @@
+import { sendApplicationCreatedEmail } from "@/lib/email/send"
 import { createClient } from "@/lib/supabase/server"
 import { applicationSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
@@ -85,6 +86,25 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (user.email) {
+      const { data: preferences } = await supabase
+        .from("profiles")
+        .select("interview_reminders_enabled, task_reminders_enabled, application_updates_enabled")
+        .eq("id", user.id)
+        .single()
+
+      try {
+        await sendApplicationCreatedEmail({
+          to: user.email,
+          companyName: data.company_name,
+          positionTitle: data.position_title,
+          preferences,
+        })
+      } catch (emailError) {
+        console.error("Failed to send application email", emailError)
+      }
     }
 
     return NextResponse.json(data, { status: 201 })

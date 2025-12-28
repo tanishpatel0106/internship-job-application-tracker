@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useEffect, useState } from "react"
 import type { Application } from "@/lib/types"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const statusColors = {
   Applied: "bg-blue-100 text-blue-800",
@@ -19,6 +21,7 @@ const statusColors = {
 export function RecentApplications() {
   const [applications, setApplications] = useState<Application[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -89,7 +92,7 @@ export function RecentApplications() {
                   <div className="font-medium">{application.position_title}</div>
                   <div className="text-sm text-muted-foreground">{application.company_name}</div>
                   <div className="text-xs text-muted-foreground">
-                    Applied {new Date(application.application_date).toLocaleDateString()}
+                    Applied {formatDateOnly(application.application_date, timeZone)}
                   </div>
                 </div>
                 <Badge className={statusColors[application.status]} variant="secondary">

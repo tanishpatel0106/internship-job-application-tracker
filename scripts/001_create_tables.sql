@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   interview_reminders_enabled BOOLEAN DEFAULT TRUE,
   task_reminders_enabled BOOLEAN DEFAULT TRUE,
   application_updates_enabled BOOLEAN DEFAULT TRUE,
+  time_zone TEXT DEFAULT 'America/New_York',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -50,6 +51,8 @@ CREATE TABLE IF NOT EXISTS public.interview_rounds (
   round_number INTEGER NOT NULL,
   interview_type TEXT NOT NULL CHECK (interview_type IN ('Phone Screen', 'Technical', 'Behavioral', 'Panel', 'Final', 'Other')),
   scheduled_date TIMESTAMP WITH TIME ZONE,
+  reminder_24h_sent_at TIMESTAMP WITH TIME ZONE,
+  reminder_48h_sent_at TIMESTAMP WITH TIME ZONE,
   duration_minutes INTEGER,
   interviewer_names TEXT,
   notes TEXT,

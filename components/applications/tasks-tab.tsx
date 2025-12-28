@@ -7,6 +7,8 @@ import { Plus, CheckSquare, Calendar, AlertCircle } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { TaskForm } from "./task-form"
 import type { Task } from "@/lib/types"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface TasksTabProps {
   applicationId: string
@@ -32,6 +34,7 @@ export function TasksTab({ applicationId }: TasksTabProps) {
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
+  const timeZone = useProfileTimeZone()
 
   const fetchTasks = useCallback(async () => {
     if (!applicationId) return
@@ -188,7 +191,7 @@ export function TasksTab({ applicationId }: TasksTabProps) {
                     {task.due_date && (
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <Calendar className="h-4 w-4" />
-                        Due {new Date(task.due_date).toLocaleDateString()}
+                        Due {formatDateOnly(task.due_date, timeZone)}
                       </div>
                     )}
                   </div>

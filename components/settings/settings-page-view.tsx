@@ -7,10 +7,12 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { User, Shield, Download, Upload, Bell } from "lucide-react"
 import type { User as SupabaseUser } from "@supabase/supabase-js"
 import type { Profile } from "@/lib/types"
+import { formatDateTimeDisplay } from "@/lib/date"
 
 interface SettingsPageViewProps {
   user: SupabaseUser
@@ -28,6 +30,14 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
   const [applicationUpdatesEnabled, setApplicationUpdatesEnabled] = useState(
     profile?.application_updates_enabled ?? true
   )
+  const [timeZone, setTimeZone] = useState(profile?.time_zone || "America/New_York")
+
+  const timeZoneOptions = [
+    { value: "America/New_York", label: "Eastern Time (ET)" },
+    { value: "America/Chicago", label: "Central Time (CT)" },
+    { value: "America/Denver", label: "Mountain Time (MT)" },
+    { value: "America/Los_Angeles", label: "Pacific Time (PT)" },
+  ]
 
   const getInitials = (text: string) => {
     return text
@@ -46,7 +56,7 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
       const res = await fetch("/api/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full_name: fullName }),
+        body: JSON.stringify({ full_name: fullName, time_zone: timeZone }),
       })
       if (!res.ok) {
         console.error("Failed to update profile")
@@ -127,7 +137,7 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
                 <h3 className="font-medium">{fullName || user.email}</h3>
                 <p className="text-sm text-muted-foreground">{user.email}</p>
                 <p className="text-sm text-muted-foreground">
-                  Member since {new Date(user.created_at).toLocaleDateString()}
+                  Member since {formatDateTimeDisplay(user.created_at, timeZone, { dateStyle: "medium" })}
                 </p>
               </div>
             </div>
@@ -138,6 +148,25 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
               <div className="grid gap-2">
                 <Label htmlFor="full_name">Full Name</Label>
                 <Input id="full_name" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="time_zone">Time Zone</Label>
+                <Select value={timeZone} onValueChange={setTimeZone}>
+                  <SelectTrigger id="time_zone">
+                    <SelectValue placeholder="Select your time zone" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {timeZoneOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  Scheduled interview times will display in this time zone.
+                </p>
               </div>
 
               <div className="grid gap-2">
@@ -168,7 +197,7 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
               <div>
                 <h4 className="font-medium">Password</h4>
                 <p className="text-sm text-muted-foreground">
-                  Last updated {new Date(user.updated_at || user.created_at).toLocaleDateString()}
+                  Last updated {formatDateTimeDisplay(user.updated_at || user.created_at, timeZone, { dateStyle: "medium" })}
                 </p>
               </div>
               <Button variant="outline" disabled>

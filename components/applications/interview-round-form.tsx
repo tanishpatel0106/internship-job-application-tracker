@@ -10,6 +10,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
 import type { InterviewRound, Application } from "@/lib/types"
+import { formatDateTimeForInput, zonedTimeToUtcIso } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface InterviewRoundFormProps {
   applicationId?: string // Made applicationId optional
@@ -22,11 +24,12 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [applications, setApplications] = useState<Application[]>([])
+  const timeZone = useProfileTimeZone()
 
   const [formData, setFormData] = useState({
     round_number: initialData?.round_number || 1,
     interview_type: initialData?.interview_type || "Phone Screen",
-    scheduled_date: initialData?.scheduled_date ? new Date(initialData.scheduled_date).toISOString().slice(0, 16) : "",
+    scheduled_date: "",
     duration_minutes: initialData?.duration_minutes || "",
     interviewer_names: initialData?.interviewer_names || "",
     notes: initialData?.notes || "",
@@ -40,6 +43,14 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
       fetchApplications()
     }
   }, [applicationId])
+
+  useEffect(() => {
+    if (!initialData?.scheduled_date) return
+    setFormData((prev) => ({
+      ...prev,
+      scheduled_date: formatDateTimeForInput(initialData.scheduled_date, timeZone),
+    }))
+  }, [initialData?.scheduled_date, timeZone])
 
   const fetchApplications = async () => {
     try {
@@ -65,7 +76,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
           formData.application_id && formData.application_id !== "default" ? formData.application_id : null,
         round_number: Number(formData.round_number),
         interview_type: formData.interview_type,
-        scheduled_date: formData.scheduled_date || undefined,
+        scheduled_date: formData.scheduled_date ? zonedTimeToUtcIso(formData.scheduled_date, timeZone) : undefined,
         duration_minutes: formData.duration_minutes ? Number(formData.duration_minutes) : undefined,
         interviewer_names: formData.interviewer_names || undefined,
         notes: formData.notes || undefined,
@@ -166,6 +177,7 @@ export function InterviewRoundForm({ applicationId, initialData, onComplete, onC
                 value={formData.scheduled_date}
                 onChange={(e) => handleChange("scheduled_date", e.target.value)}
               />
+              <p className="text-xs text-muted-foreground">Times shown in {timeZone}.</p>
             </div>
 
             <div className="space-y-2">

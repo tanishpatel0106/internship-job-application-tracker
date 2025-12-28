@@ -4,6 +4,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Calendar, FileText, Users, CheckSquare, MessageSquare } from "lucide-react"
 import { useEffect, useState } from "react"
+import { formatDateOnly, formatDateTimeDisplay, isDateOnlyString } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface TimelineEvent {
   id: string
@@ -21,6 +23,7 @@ interface ApplicationTimelineProps {
 export function ApplicationTimeline({ applicationId }: ApplicationTimelineProps) {
   const [events, setEvents] = useState<TimelineEvent[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const timeZone = useProfileTimeZone()
 
   useEffect(() => {
     const fetchTimelineData = async () => {
@@ -176,7 +179,11 @@ export function ApplicationTimeline({ applicationId }: ApplicationTimelineProps)
                       )}
                     </div>
                     {event.description && <p className="text-sm text-muted-foreground">{event.description}</p>}
-                    <p className="text-xs text-muted-foreground">{new Date(event.date).toLocaleString()}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {isDateOnlyString(event.date)
+                        ? formatDateOnly(event.date, timeZone)
+                        : formatDateTimeDisplay(event.date, timeZone)}
+                    </p>
                   </div>
                 </div>
               )

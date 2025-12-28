@@ -12,6 +12,8 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import type { Application } from "@/lib/types"
 import { toast } from "sonner"
+import { formatDateOnly } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const statusColors = {
   Applied: "bg-blue-100 text-blue-800",
@@ -35,6 +37,7 @@ interface ApplicationsData {
 export function ApplicationsTable() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const timeZone = useProfileTimeZone()
   const [applications, setApplications] = useState<ApplicationsData>({
     data: [],
     pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
@@ -275,7 +278,7 @@ export function ApplicationsTable() {
                     </div>
                   </TableCell>
                   <TableCell>{application.company_name}</TableCell>
-                  <TableCell>{new Date(application.application_date).toLocaleDateString()}</TableCell>
+                  <TableCell>{formatDateOnly(application.application_date, timeZone)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
