@@ -5,6 +5,7 @@ export interface Profile {
   interview_reminders_enabled?: boolean | null
   task_reminders_enabled?: boolean | null
   application_updates_enabled?: boolean | null
+  time_zone?: string | null
   created_at: string
   updated_at: string
 }

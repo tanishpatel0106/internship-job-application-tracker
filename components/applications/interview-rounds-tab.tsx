@@ -7,6 +7,8 @@ import { Plus, Calendar, Clock, User, AlertCircle } from "lucide-react"
 import { useEffect, useState, useCallback } from "react"
 import { InterviewRoundForm } from "./interview-round-form"
 import type { InterviewRound } from "@/lib/types"
+import { formatDateTimeDisplay } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 interface InterviewRoundsTabProps {
   applicationId: string
@@ -34,6 +36,7 @@ export function InterviewRoundsTab({ applicationId }: InterviewRoundsTabProps) {
   const [error, setError] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
   const [editingInterview, setEditingInterview] = useState<InterviewRound | null>(null)
+  const timeZone = useProfileTimeZone()
 
   const fetchInterviews = useCallback(async () => {
     if (!applicationId) return
@@ -172,11 +175,15 @@ export function InterviewRoundsTab({ applicationId }: InterviewRoundsTabProps) {
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <Calendar className="h-4 w-4" />
-                          {new Date(interview.scheduled_date).toLocaleDateString()}
+                          {formatDateTimeDisplay(interview.scheduled_date, timeZone, {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                          })}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="h-4 w-4" />
-                          {new Date(interview.scheduled_date).toLocaleTimeString([], {
+                          {formatDateTimeDisplay(interview.scheduled_date, timeZone, {
                             hour: "2-digit",
                             minute: "2-digit",
                           })}

@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   interview_reminders_enabled BOOLEAN DEFAULT TRUE,
   task_reminders_enabled BOOLEAN DEFAULT TRUE,
   application_updates_enabled BOOLEAN DEFAULT TRUE,
+  time_zone TEXT DEFAULT 'America/New_York',
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

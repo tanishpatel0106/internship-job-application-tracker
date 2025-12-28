@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Calendar, Clock, Pencil, Trash, Link as LinkIcon } from "lucide-react"
 import Link from "next/link"
 import type { InterviewRound } from "@/lib/types"
+import { formatDateTimeDisplay } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 
 const resultColors: Record<string, string> = {
   Passed: "bg-green-100 text-green-800",
@@ -20,6 +22,7 @@ export function InterviewsPageView() {
   const [interviews, setInterviews] = useState<InterviewRound[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
+  const timeZone = useProfileTimeZone()
 
   const fetchInterviews = async () => {
     setIsLoading(true)
@@ -147,7 +150,7 @@ export function InterviewsPageView() {
                         {interview.scheduled_date && (
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Calendar className="h-4 w-4 mr-2" />
-                            {new Date(interview.scheduled_date).toLocaleString()}
+                            {formatDateTimeDisplay(interview.scheduled_date, timeZone)}
                           </div>
                         )}
                         {interview.duration_minutes && (
@@ -208,7 +211,7 @@ export function InterviewsPageView() {
                         {interview.scheduled_date && (
                           <div className="flex items-center text-sm text-muted-foreground">
                             <Calendar className="h-4 w-4 mr-2" />
-                            {new Date(interview.scheduled_date).toLocaleString()}
+                            {formatDateTimeDisplay(interview.scheduled_date, timeZone)}
                           </div>
                         )}
                         {interview.duration_minutes && (
