@@ -8,7 +8,7 @@ import Link from "next/link"
 import { useEffect, useState } from "react"
 import type { Task } from "@/lib/types"
 
-const priorityColors = {
+export const priorityColors = {
   Low: "bg-gray-100 text-gray-800",
   Medium: "bg-blue-100 text-blue-800",
   High: "bg-orange-100 text-orange-800",
