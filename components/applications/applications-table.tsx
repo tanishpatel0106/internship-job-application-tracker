@@ -5,11 +5,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
+import { Checkbox } from "@/components/ui/checkbox"
 import { Edit, Trash2, Eye } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
 import type { Application } from "@/lib/types"
+import { toast } from "sonner"
 
 const statusColors = {
   Applied: "bg-blue-100 text-blue-800",
@@ -38,6 +40,16 @@ export function ApplicationsTable() {
     pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
   })
   const [isLoading, setIsLoading] = useState(true)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [isBulkUpdating, setIsBulkUpdating] = useState(false)
+
+  const bulkStatusActions: Array<{ label: string; status: Application["status"] }> = [
+    { label: "Mark Interview Scheduled", status: "Interview Scheduled" },
+    { label: "Mark Interview Completed", status: "Interview Completed" },
+    { label: "Mark Offer Received", status: "Offer Received" },
+    { label: "Mark Rejected", status: "Rejected" },
+    { label: "Mark Withdrawn", status: "Withdrawn" },
+  ]
 
   const fetchApplications = async () => {
     setIsLoading(true)
@@ -49,6 +61,10 @@ export function ApplicationsTable() {
       if (response.ok) {
         const data = await response.json()
         setApplications(data)
+        setSelectedIds((prev) => {
+          const validIds = new Set<string>(data.data.map((application: Application) => application.id))
+          return new Set([...prev].filter((id) => validIds.has(id)))
+        })
       }
     } catch (error) {
       console.error("Failed to fetch applications:", error)
@@ -90,6 +106,56 @@ export function ApplicationsTable() {
     } catch (error) {
       console.error("Failed to update status:", error)
     }
+  }
+
+  const handleBulkStatusChange = async (status: Application["status"]) => {
+    if (selectedIds.size === 0) return
+    setIsBulkUpdating(true)
+    const ids = Array.from(selectedIds)
+    try {
+      const responses = await Promise.all(
+        ids.map((id) =>
+          fetch(`/api/applications/${id}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ status }),
+          })
+        )
+      )
+      const failedCount = responses.filter((response) => !response.ok).length
+      if (failedCount > 0) {
+        toast.error(`Failed to update ${failedCount} of ${ids.length} applications.`)
+      } else {
+        toast.success(`Updated ${ids.length} applications to ${status}.`)
+      }
+      setSelectedIds(new Set())
+      fetchApplications()
+    } catch (error) {
+      console.error("Failed to bulk update applications:", error)
+      toast.error("Failed to update selected applications.")
+    } finally {
+      setIsBulkUpdating(false)
+    }
+  }
+
+  const toggleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedIds(new Set(applications.data.map((application) => application.id)))
+    } else {
+      setSelectedIds(new Set())
+    }
+  }
+
+  const toggleSelectOne = (id: string, checked: boolean) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (checked) {
+        next.add(id)
+      } else {
+        next.delete(id)
+      }
+      return next
+    })
   }
 
   const handlePageChange = (page: number) => {
@@ -137,13 +203,51 @@ export function ApplicationsTable() {
     )
   }
 
+  const selectedCount = selectedIds.size
+  const allSelected = selectedCount > 0 && selectedCount === applications.data.length
+  const isIndeterminate = selectedCount > 0 && selectedCount < applications.data.length
+
   return (
     <div className="space-y-4">
+      {selectedCount > 0 && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3">
+          <div className="text-sm font-medium">{selectedCount} selected</div>
+          <div className="flex flex-wrap items-center gap-2">
+            {bulkStatusActions.map((action) => (
+              <Button
+                key={action.status}
+                variant="outline"
+                size="sm"
+                onClick={() => handleBulkStatusChange(action.status)}
+                disabled={isBulkUpdating}
+              >
+                {action.label}
+              </Button>
+            ))}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setSelectedIds(new Set())}
+              disabled={isBulkUpdating}
+            >
+              Clear selection
+            </Button>
+          </div>
+        </div>
+      )}
+
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
+                <TableHead className="w-10">
+                  <Checkbox
+                    checked={allSelected ? true : isIndeterminate ? "indeterminate" : false}
+                    onCheckedChange={(checked) => toggleSelectAll(checked === true)}
+                    aria-label="Select all applications"
+                  />
+                </TableHead>
                 <TableHead>Position</TableHead>
                 <TableHead>Company</TableHead>
                 <TableHead>Applied Date</TableHead>
@@ -155,6 +259,13 @@ export function ApplicationsTable() {
             <TableBody>
               {applications.data.map((application) => (
                 <TableRow key={application.id}>
+                  <TableCell className="w-10">
+                    <Checkbox
+                      checked={selectedIds.has(application.id)}
+                      onCheckedChange={(checked) => toggleSelectOne(application.id, checked === true)}
+                      aria-label={`Select application for ${application.position_title}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div>
                       <div className="font-medium">{application.position_title}</div>
