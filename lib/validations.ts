@@ -55,5 +55,8 @@ export const taskSchema = z.object({
 })
 
 export const profileSchema = z.object({
-  full_name: z.string().min(1, "Full name is required"),
+  full_name: z.string().min(1, "Full name is required").optional(),
+  interview_reminders_enabled: z.boolean().optional(),
+  task_reminders_enabled: z.boolean().optional(),
+  application_updates_enabled: z.boolean().optional(),
 })

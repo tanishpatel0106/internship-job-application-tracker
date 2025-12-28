@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server"
+import { queueReminderEmail } from "@/lib/email/reminder-preferences"
 import { interviewRoundSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -66,6 +67,16 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })
+    }
+
+    if (validatedData.scheduled_date) {
+      const { data: preferences } = await supabase
+        .from("profiles")
+        .select("interview_reminders_enabled, task_reminders_enabled, application_updates_enabled")
+        .eq("id", user.id)
+        .single()
+
+      await queueReminderEmail({ preferences, type: "interview" })
     }
 
     return NextResponse.json(data, { status: 201 })
