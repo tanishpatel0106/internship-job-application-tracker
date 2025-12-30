@@ -49,15 +49,41 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No profile updates provided" }, { status: 400 })
     }
 
-    const { data, error } = await supabase
-      .from("profiles")
-      .update({
-        ...updates,
-        updated_at: new Date().toISOString(),
-      })
-      .eq("id", user.id)
-      .select()
-      .single()
+    const applyUpdate = async (payload: Record<string, unknown>) =>
+      supabase
+        .from("profiles")
+        .update({
+          ...payload,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", user.id)
+        .select()
+        .single()
+
+    let { data, error } = await applyUpdate(updates)
+
+    if (error) {
+      const message = error.message.toLowerCase()
+      const hasGoalField =
+        "monthly_application_goal" in updates || "daily_application_goal" in updates
+      const isMissingColumn =
+        message.includes("column") &&
+        (message.includes("monthly_application_goal") || message.includes("daily_application_goal"))
+
+      if (hasGoalField && isMissingColumn) {
+        const { monthly_application_goal, daily_application_goal, ...fallbackUpdates } = updates
+        if (Object.keys(fallbackUpdates).length === 0) {
+          return NextResponse.json(
+            { error: "Profile goals are not available for this account yet." },
+            { status: 400 }
+          )
+        }
+
+        const retry = await applyUpdate(fallbackUpdates)
+        data = retry.data
+        error = retry.error
+      }
+    }
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 })

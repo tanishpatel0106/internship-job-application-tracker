@@ -162,8 +162,8 @@ export async function GET() {
           ? 100
           : 0
 
-    const dailyGoal = profile?.daily_application_goal ?? 0
-    const monthlyGoal = profile?.monthly_application_goal ?? 0
+    const dailyGoal = profile?.daily_application_goal ?? 10
+    const monthlyGoal = profile?.monthly_application_goal ?? 200
 
     const computeStreak = (startDate: Date) => {
       if (dailyGoal <= 0) {
