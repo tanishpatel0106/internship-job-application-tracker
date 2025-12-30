@@ -9,6 +9,7 @@ import { QuickActions } from "@/components/dashboard/quick-actions"
 import { UpcomingTasks } from "@/components/dashboard/upcoming-tasks"
 import { UpcomingCalendar } from "@/components/dashboard/upcoming-calendar"
 import { StatusInsights } from "@/components/dashboard/status-insights"
+import { UpcomingDeadlines } from "@/components/dashboard/upcoming-deadlines"
 
 export default async function DashboardPage() {
   const supabase = await createClient()
@@ -44,9 +45,10 @@ export default async function DashboardPage() {
         <UpcomingCalendar />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
         <StatusInsights />
         <UpcomingTasks />
+        <UpcomingDeadlines />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
