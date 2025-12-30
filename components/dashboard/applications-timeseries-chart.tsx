@@ -52,8 +52,8 @@ export function ApplicationsTimeseriesChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Applications Activity</CardTitle>
-          <CardDescription>Loading daily and cumulative charts...</CardDescription>
+          <CardTitle>Applications Over Time</CardTitle>
+          <CardDescription>Daily application volume for the last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -68,8 +68,8 @@ export function ApplicationsTimeseriesChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Applications Activity</CardTitle>
-          <CardDescription>Daily and cumulative trends for the last 30 days</CardDescription>
+          <CardTitle>Applications Over Time</CardTitle>
+          <CardDescription>Daily application volume for the last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -81,83 +81,88 @@ export function ApplicationsTimeseriesChart() {
   }
 
   return (
-    <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle>Daily Applications</CardTitle>
-          <CardDescription>
-            Daily application volume for the last 30 days · Today: {todayCount}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={{
-              count: {
-                label: "Daily applications",
-                color: "var(--chart-1)",
-              },
-            }}
-            className="h-[300px] w-full aspect-auto"
-          >
-            <BarChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatAxisDate}
-                tickLine={false}
-                axisLine={false}
-                minTickGap={24}
-              />
-              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
-              <ChartTooltip
-                content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
-              />
-              <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
+    <Card>
+      <CardHeader>
+        <CardTitle>Applications Over Time</CardTitle>
+        <CardDescription>
+          Daily application volume for the last 30 days · Today: {todayCount}
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ChartContainer
+          config={{
+            count: {
+              label: "Daily applications",
+              color: "var(--chart-1)",
+            },
+            cumulative: {
+              label: "Cumulative total",
+              color: "var(--chart-2)",
+            },
+          }}
+          className="h-[340px] w-full aspect-auto"
+        >
+          {({ width, height }) => {
+            if (!width || !height) {
+              return null
+            }
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Cumulative Applications</CardTitle>
-          <CardDescription>Running total of applications over the same 30-day window</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ChartContainer
-            config={{
-              cumulative: {
-                label: "Cumulative total",
-                color: "var(--chart-2)",
-              },
-            }}
-            className="h-[300px] w-full aspect-auto"
-          >
-            <AreaChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
-              <CartesianGrid vertical={false} strokeDasharray="3 3" />
-              <XAxis
-                dataKey="date"
-                tickFormatter={formatAxisDate}
-                tickLine={false}
-                axisLine={false}
-                minTickGap={24}
-              />
-              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
-              <ChartTooltip
-                content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
-              />
-              <Area
-                type="monotone"
-                dataKey="cumulative"
-                stroke="var(--color-cumulative)"
-                strokeWidth={2}
-                fill="var(--color-cumulative)"
-                fillOpacity={0.2}
-              />
-            </AreaChart>
-          </ChartContainer>
-        </CardContent>
-      </Card>
-    </div>
+            const chartHeight = Math.floor(height / 2)
+
+            return (
+              <div className="flex flex-col" style={{ width, height }}>
+                <BarChart
+                  data={data}
+                  width={width}
+                  height={chartHeight}
+                  margin={{ left: 12, right: 24, top: 10, bottom: 12 }}
+                >
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatAxisDate}
+                    tickLine={false}
+                    axisLine={false}
+                    minTickGap={24}
+                  />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+                  <ChartTooltip
+                    content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
+                  />
+                  <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 0, 0]} />
+                </BarChart>
+                <AreaChart
+                  data={data}
+                  width={width}
+                  height={height - chartHeight}
+                  margin={{ left: 12, right: 24, top: 10, bottom: 12 }}
+                >
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="date"
+                    tickFormatter={formatAxisDate}
+                    tickLine={false}
+                    axisLine={false}
+                    minTickGap={24}
+                  />
+                  <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+                  <ChartTooltip
+                    content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="cumulative"
+                    stroke="var(--color-cumulative)"
+                    strokeWidth={2}
+                    fill="var(--color-cumulative)"
+                    fillOpacity={0.2}
+                  />
+                </AreaChart>
+              </div>
+            )
+          }}
+        </ChartContainer>
+      </CardContent>
+    </Card>
   )
 }
