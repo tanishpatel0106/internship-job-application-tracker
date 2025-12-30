@@ -13,15 +13,11 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
       .from("profiles")
       .select("monthly_application_goal, daily_application_goal")
       .eq("id", user.id)
-      .single()
-
-    if (profileError) {
-      return NextResponse.json({ error: profileError.message }, { status: 500 })
-    }
+      .maybeSingle()
 
     const { data: applications, error: appsError } = await supabase
       .from("applications")
@@ -48,9 +44,7 @@ export async function GET() {
       .select("created_at, status")
       .eq("user_id", user.id)
 
-    if (tasksListError) {
-      return NextResponse.json({ error: tasksListError.message }, { status: 500 })
-    }
+    const safeTasks = tasksListError ? [] : tasks ?? []
 
     // Get upcoming interviews count
     const { count: upcomingInterviews, error: interviewsError } = await supabase
@@ -68,9 +62,7 @@ export async function GET() {
       .select("scheduled_date")
       .eq("user_id", user.id)
 
-    if (interviewsListError) {
-      return NextResponse.json({ error: interviewsListError.message }, { status: 500 })
-    }
+    const safeInterviews = interviewsListError ? [] : interviews ?? []
 
     // Calculate statistics
     const totalApplications = applications.length
@@ -268,7 +260,7 @@ export async function GET() {
           ? 100
           : 0
 
-    const tasksDates = tasks
+    const tasksDates = safeTasks
       .map((task) => {
         const parsed = new Date(task.created_at)
         return Number.isNaN(parsed.getTime()) ? null : parsed
@@ -289,7 +281,7 @@ export async function GET() {
     const taskChange =
       taskPrev7 > 0 ? Math.round(((taskLast7 - taskPrev7) / taskPrev7) * 100) : taskLast7 > 0 ? 100 : 0
 
-    const interviewDates = interviews
+    const interviewDates = safeInterviews
       .map((interview) => {
         if (!interview.scheduled_date) return null
         const parsed = new Date(interview.scheduled_date)
