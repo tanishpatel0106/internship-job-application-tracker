@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts"
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts"
 import { useEffect, useState } from "react"
 import { formatDateOnlyWithOptions } from "@/lib/date"
 import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
@@ -52,8 +52,8 @@ export function ApplicationsTimeseriesChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Applications Over Time</CardTitle>
-          <CardDescription>Daily application volume for the last 30 days</CardDescription>
+          <CardTitle>Applications Activity</CardTitle>
+          <CardDescription>Loading daily and cumulative charts...</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -68,8 +68,8 @@ export function ApplicationsTimeseriesChart() {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>Applications Over Time</CardTitle>
-          <CardDescription>Daily application volume for the last 30 days</CardDescription>
+          <CardTitle>Applications Activity</CardTitle>
+          <CardDescription>Daily and cumulative trends for the last 30 days</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[300px] flex items-center justify-center">
@@ -81,73 +81,83 @@ export function ApplicationsTimeseriesChart() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Applications Over Time</CardTitle>
-        <CardDescription>
-          Daily application volume for the last 30 days · Today: {todayCount}
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <ChartContainer
-          config={{
-            count: {
-              label: "Daily",
-              color: "var(--chart-1)",
-            },
-            cumulative: {
-              label: "Cumulative",
-              color: "var(--chart-2)",
-            },
-          }}
-          className="h-[340px] w-full aspect-auto"
-        >
-          <LineChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
-            <CartesianGrid vertical={false} strokeDasharray="3 3" />
-            <XAxis
-              dataKey="date"
-              tickFormatter={formatAxisDate}
-              tickLine={false}
-              axisLine={false}
-              minTickGap={24}
-            />
-            <YAxis
-              yAxisId="left"
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              width={36}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              allowDecimals={false}
-              tickLine={false}
-              axisLine={false}
-              width={48}
-            />
-            <ChartTooltip content={<ChartTooltipContent labelFormatter={formatTooltipDate} />} />
-            <Line
-              type="monotone"
-              dataKey="count"
-              yAxisId="left"
-              stroke="var(--color-count)"
-              strokeWidth={2}
-              dot={{ r: 3, fill: "var(--color-count)" }}
-              activeDot={{ r: 5 }}
-            />
-            <Line
-              type="monotone"
-              dataKey="cumulative"
-              yAxisId="right"
-              stroke="var(--color-cumulative)"
-              strokeWidth={2}
-              dot={false}
-              activeDot={{ r: 4 }}
-            />
-          </LineChart>
-        </ChartContainer>
-      </CardContent>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Daily Applications</CardTitle>
+          <CardDescription>
+            Daily application volume for the last 30 days · Today: {todayCount}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={{
+              count: {
+                label: "Daily applications",
+                color: "var(--chart-1)",
+              },
+            }}
+            className="h-[300px] w-full aspect-auto"
+          >
+            <BarChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatAxisDate}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={24}
+              />
+              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+              <ChartTooltip
+                content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
+              />
+              <Bar dataKey="count" fill="var(--color-count)" radius={[6, 6, 0, 0]} />
+            </BarChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Cumulative Applications</CardTitle>
+          <CardDescription>Running total of applications over the same 30-day window</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <ChartContainer
+            config={{
+              cumulative: {
+                label: "Cumulative total",
+                color: "var(--chart-2)",
+              },
+            }}
+            className="h-[300px] w-full aspect-auto"
+          >
+            <AreaChart data={data} margin={{ left: 12, right: 24, top: 10, bottom: 12 }}>
+              <CartesianGrid vertical={false} strokeDasharray="3 3" />
+              <XAxis
+                dataKey="date"
+                tickFormatter={formatAxisDate}
+                tickLine={false}
+                axisLine={false}
+                minTickGap={24}
+              />
+              <YAxis allowDecimals={false} tickLine={false} axisLine={false} width={36} />
+              <ChartTooltip
+                content={<ChartTooltipContent labelFormatter={formatTooltipDate} />}
+              />
+              <Area
+                type="monotone"
+                dataKey="cumulative"
+                stroke="var(--color-cumulative)"
+                strokeWidth={2}
+                fill="var(--color-cumulative)"
+                fillOpacity={0.2}
+              />
+            </AreaChart>
+          </ChartContainer>
+        </CardContent>
+      </Card>
+    </div>
   )
 }
