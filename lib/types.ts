@@ -6,6 +6,8 @@ export interface Profile {
   task_reminders_enabled?: boolean | null
   application_updates_enabled?: boolean | null
   time_zone?: string | null
+  monthly_application_goal?: number | null
+  daily_application_goal?: number | null
   created_at: string
   updated_at: string
 }

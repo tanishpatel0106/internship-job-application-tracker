@@ -60,4 +60,6 @@ export const profileSchema = z.object({
   task_reminders_enabled: z.boolean().optional(),
   application_updates_enabled: z.boolean().optional(),
   time_zone: z.string().optional(),
+  monthly_application_goal: z.number().int().min(0).nullable().optional(),
+  daily_application_goal: z.number().int().min(0).nullable().optional(),
 })

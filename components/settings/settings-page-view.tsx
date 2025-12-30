@@ -31,6 +31,11 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
     profile?.application_updates_enabled ?? true
   )
   const [timeZone, setTimeZone] = useState(profile?.time_zone || "America/New_York")
+  const [monthlyGoal, setMonthlyGoal] = useState(
+    profile?.monthly_application_goal?.toString() || ""
+  )
+  const [dailyGoal, setDailyGoal] = useState(profile?.daily_application_goal?.toString() || "")
+  const [isUpdatingGoals, setIsUpdatingGoals] = useState(false)
 
   const timeZoneOptions = [
     { value: "America/New_York", label: "Eastern Time (ET)" },
@@ -88,6 +93,27 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
       }
     } finally {
       setIsUpdatingPreferences(false)
+    }
+  }
+
+  const handleUpdateGoals = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsUpdatingGoals(true)
+    try {
+      const payload = {
+        monthly_application_goal: monthlyGoal === "" ? null : Number(monthlyGoal),
+        daily_application_goal: dailyGoal === "" ? null : Number(dailyGoal),
+      }
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      if (!res.ok) {
+        console.error("Failed to update goals")
+      }
+    } finally {
+      setIsUpdatingGoals(false)
     }
   }
 
@@ -265,6 +291,53 @@ export function SettingsPageView({ user, profile }: SettingsPageViewProps) {
 
               <Button type="submit" disabled={isUpdatingPreferences}>
                 {isUpdatingPreferences ? "Saving..." : "Save Preferences"}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <TrendingUp className="h-5 w-5 mr-2" />
+              Application Goals
+            </CardTitle>
+            <CardDescription>Set your daily and monthly application targets.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleUpdateGoals} className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="monthly_goal">Monthly application goal</Label>
+                <Input
+                  id="monthly_goal"
+                  type="number"
+                  min={0}
+                  value={monthlyGoal}
+                  onChange={(e) => setMonthlyGoal(e.target.value)}
+                  placeholder="e.g. 40"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used to track monthly goal progress and streaks.
+                </p>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor="daily_goal">Daily application goal</Label>
+                <Input
+                  id="daily_goal"
+                  type="number"
+                  min={0}
+                  value={dailyGoal}
+                  onChange={(e) => setDailyGoal(e.target.value)}
+                  placeholder="e.g. 2"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Used to calculate daily streaks and momentum.
+                </p>
+              </div>
+
+              <Button type="submit" disabled={isUpdatingGoals}>
+                {isUpdatingGoals ? "Saving..." : "Save Goals"}
               </Button>
             </form>
           </CardContent>
