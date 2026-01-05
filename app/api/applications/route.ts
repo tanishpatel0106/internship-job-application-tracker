@@ -34,6 +34,7 @@ export async function GET(request: NextRequest) {
       "company_name",
       "position_title",
       "status",
+      "application_method",
       "location",
       "created_at",
     ])

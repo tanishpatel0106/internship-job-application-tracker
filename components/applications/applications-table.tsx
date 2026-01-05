@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Edit, Trash2, Eye } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -43,6 +44,12 @@ export function ApplicationsTable() {
     data: [],
     pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
   })
+  const sort = searchParams.get("sort") || "application_date"
+  const order = searchParams.get("order") || "desc"
+  const locationFilter = searchParams.get("location") || ""
+  const methodFilter = searchParams.get("method") || ""
+  const dateFrom = searchParams.get("date_from") || ""
+  const dateTo = searchParams.get("date_to") || ""
   const [isLoading, setIsLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
@@ -80,6 +87,41 @@ export function ApplicationsTable() {
   useEffect(() => {
     fetchApplications()
   }, [searchParams])
+
+  const updateParam = (key: string, value: string) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) {
+      params.set(key, value)
+    } else {
+      params.delete(key)
+    }
+    params.delete("page")
+    const newUrl = params.toString() ? `?${params.toString()}` : ""
+    router.push(`/dashboard/applications${newUrl}`)
+  }
+
+  const handleSort = (key: string) => {
+    const isActive = sort === key
+    const nextOrder = isActive
+      ? order === "asc"
+        ? "desc"
+        : "asc"
+      : key === "application_date"
+        ? "desc"
+        : "asc"
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("sort", key)
+    params.set("order", nextOrder)
+    params.delete("page")
+    router.push(`/dashboard/applications?${params.toString()}`)
+  }
+
+  const renderSortIcon = (key: string) => {
+    if (sort !== key) {
+      return <ArrowUpDown className="h-3 w-3" />
+    }
+    return order === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this application?")) return
@@ -258,12 +300,112 @@ export function ApplicationsTable() {
                     aria-label="Select all applications"
                   />
                 </TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Applied Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("position_title")}
+                  >
+                    Position
+                    <span className="ml-1">{renderSortIcon("position_title")}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("company_name")}
+                  >
+                    Company
+                    <span className="ml-1">{renderSortIcon("company_name")}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("application_date")}
+                  >
+                    Applied Date
+                    <span className="ml-1">{renderSortIcon("application_date")}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("status")}
+                  >
+                    Status
+                    <span className="ml-1">{renderSortIcon("status")}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("application_method")}
+                  >
+                    Method
+                    <span className="ml-1">{renderSortIcon("application_method")}</span>
+                  </Button>
+                </TableHead>
+                <TableHead>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2"
+                    onClick={() => handleSort("location")}
+                  >
+                    Location
+                    <span className="ml-1">{renderSortIcon("location")}</span>
+                  </Button>
+                </TableHead>
                 <TableHead className="w-[150px] text-right">Actions</TableHead>
+              </TableRow>
+              <TableRow>
+                <TableHead />
+                <TableHead />
+                <TableHead />
+                <TableHead>
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      type="date"
+                      value={dateFrom}
+                      onChange={(e) => updateParam("date_from", e.target.value)}
+                      className="h-8"
+                    />
+                    <Input
+                      type="date"
+                      value={dateTo}
+                      onChange={(e) => updateParam("date_to", e.target.value)}
+                      className="h-8"
+                    />
+                  </div>
+                </TableHead>
+                <TableHead />
+                <TableHead>
+                  <Input
+                    placeholder="Filter method"
+                    value={methodFilter}
+                    onChange={(e) => updateParam("method", e.target.value)}
+                    className="h-8"
+                  />
+                </TableHead>
+                <TableHead>
+                  <Input
+                    placeholder="Filter location"
+                    value={locationFilter}
+                    onChange={(e) => updateParam("location", e.target.value)}
+                    className="h-8"
+                  />
+                </TableHead>
+                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -313,6 +455,7 @@ export function ApplicationsTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
+                  <TableCell>{application.application_method || "—"}</TableCell>
                   <TableCell>{application.location || "—"}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end space-x-2">
