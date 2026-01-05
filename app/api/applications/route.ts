@@ -20,7 +20,6 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status")
     const search = searchParams.get("search")
     const location = searchParams.get("location")
-    const method = searchParams.get("method")
     const dateFrom = searchParams.get("date_from")
     const dateTo = searchParams.get("date_to")
     const sort = searchParams.get("sort") || "application_date"
@@ -34,7 +33,6 @@ export async function GET(request: NextRequest) {
       "company_name",
       "position_title",
       "status",
-      "application_method",
       "location",
       "created_at",
     ])
@@ -58,10 +56,6 @@ export async function GET(request: NextRequest) {
 
     if (location) {
       query = query.ilike("location", `%${location}%`)
-    }
-
-    if (method) {
-      query = query.ilike("application_method", `%${method}%`)
     }
 
     if (dateFrom) {

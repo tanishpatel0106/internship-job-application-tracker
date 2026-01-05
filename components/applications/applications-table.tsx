@@ -47,7 +47,6 @@ export function ApplicationsTable() {
   const sort = searchParams.get("sort") || "application_date"
   const order = searchParams.get("order") || "desc"
   const locationFilter = searchParams.get("location") || ""
-  const methodFilter = searchParams.get("method") || ""
   const dateFrom = searchParams.get("date_from") || ""
   const dateTo = searchParams.get("date_to") || ""
   const [isLoading, setIsLoading] = useState(true)
@@ -122,6 +121,18 @@ export function ApplicationsTable() {
     }
     return order === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
   }
+
+  const renderSortableHeader = (label: string, key: string) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 px-2 w-full justify-between font-medium"
+      onClick={() => handleSort(key)}
+    >
+      <span>{label}</span>
+      {renderSortIcon(key)}
+    </Button>
+  )
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this application?")) return
@@ -300,72 +311,11 @@ export function ApplicationsTable() {
                     aria-label="Select all applications"
                   />
                 </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("position_title")}
-                  >
-                    Position
-                    <span className="ml-1">{renderSortIcon("position_title")}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("company_name")}
-                  >
-                    Company
-                    <span className="ml-1">{renderSortIcon("company_name")}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("application_date")}
-                  >
-                    Applied Date
-                    <span className="ml-1">{renderSortIcon("application_date")}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("status")}
-                  >
-                    Status
-                    <span className="ml-1">{renderSortIcon("status")}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("application_method")}
-                  >
-                    Method
-                    <span className="ml-1">{renderSortIcon("application_method")}</span>
-                  </Button>
-                </TableHead>
-                <TableHead>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 px-2"
-                    onClick={() => handleSort("location")}
-                  >
-                    Location
-                    <span className="ml-1">{renderSortIcon("location")}</span>
-                  </Button>
-                </TableHead>
+                <TableHead>{renderSortableHeader("Position", "position_title")}</TableHead>
+                <TableHead>{renderSortableHeader("Company", "company_name")}</TableHead>
+                <TableHead>{renderSortableHeader("Applied Date", "application_date")}</TableHead>
+                <TableHead>{renderSortableHeader("Status", "status")}</TableHead>
+                <TableHead>{renderSortableHeader("Location", "location")}</TableHead>
                 <TableHead className="w-[150px] text-right">Actions</TableHead>
               </TableRow>
               <TableRow>
@@ -373,7 +323,7 @@ export function ApplicationsTable() {
                 <TableHead />
                 <TableHead />
                 <TableHead>
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-2 py-2">
                     <Input
                       type="date"
                       value={dateFrom}
@@ -389,14 +339,6 @@ export function ApplicationsTable() {
                   </div>
                 </TableHead>
                 <TableHead />
-                <TableHead>
-                  <Input
-                    placeholder="Filter method"
-                    value={methodFilter}
-                    onChange={(e) => updateParam("method", e.target.value)}
-                    className="h-8"
-                  />
-                </TableHead>
                 <TableHead>
                   <Input
                     placeholder="Filter location"
@@ -455,7 +397,6 @@ export function ApplicationsTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                  <TableCell>{application.application_method || "—"}</TableCell>
                   <TableCell>{application.location || "—"}</TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end space-x-2">
