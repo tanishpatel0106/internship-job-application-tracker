@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Input } from "@/components/ui/input"
 import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -46,9 +45,6 @@ export function ApplicationsTable() {
   })
   const sort = searchParams.get("sort") || "application_date"
   const order = searchParams.get("order") || "desc"
-  const locationFilter = searchParams.get("location") || ""
-  const dateFrom = searchParams.get("date_from") || ""
-  const dateTo = searchParams.get("date_to") || ""
   const [isLoading, setIsLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
@@ -86,18 +82,6 @@ export function ApplicationsTable() {
   useEffect(() => {
     fetchApplications()
   }, [searchParams])
-
-  const updateParam = (key: string, value: string) => {
-    const params = new URLSearchParams(searchParams.toString())
-    if (value) {
-      params.set(key, value)
-    } else {
-      params.delete(key)
-    }
-    params.delete("page")
-    const newUrl = params.toString() ? `?${params.toString()}` : ""
-    router.push(`/dashboard/applications${newUrl}`)
-  }
 
   const handleSort = (key: string) => {
     const isActive = sort === key
@@ -317,37 +301,6 @@ export function ApplicationsTable() {
                 <TableHead>{renderSortableHeader("Status", "status")}</TableHead>
                 <TableHead>{renderSortableHeader("Location", "location")}</TableHead>
                 <TableHead className="w-[150px] text-right">Actions</TableHead>
-              </TableRow>
-              <TableRow>
-                <TableHead />
-                <TableHead />
-                <TableHead />
-                <TableHead>
-                  <div className="flex flex-col gap-2 py-2">
-                    <Input
-                      type="date"
-                      value={dateFrom}
-                      onChange={(e) => updateParam("date_from", e.target.value)}
-                      className="h-8"
-                    />
-                    <Input
-                      type="date"
-                      value={dateTo}
-                      onChange={(e) => updateParam("date_to", e.target.value)}
-                      className="h-8"
-                    />
-                  </div>
-                </TableHead>
-                <TableHead />
-                <TableHead>
-                  <Input
-                    placeholder="Filter location"
-                    value={locationFilter}
-                    onChange={(e) => updateParam("location", e.target.value)}
-                    className="h-8"
-                  />
-                </TableHead>
-                <TableHead />
               </TableRow>
             </TableHeader>
             <TableBody>
