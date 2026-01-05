@@ -2,7 +2,6 @@ import { createClient } from "@/lib/supabase/server"
 import { redirect } from "next/navigation"
 import { ApplicationsTable } from "@/components/applications/applications-table"
 import { ApplicationsHeader } from "@/components/applications/applications-header"
-import { BulkResumeUpload } from "@/components/applications/bulk-resume-upload"
 
 export default async function ApplicationsPage() {
   const supabase = await createClient()
@@ -18,7 +17,6 @@ export default async function ApplicationsPage() {
   return (
     <div className="space-y-6">
       <ApplicationsHeader />
-      <BulkResumeUpload />
       <ApplicationsTable />
     </div>
   )

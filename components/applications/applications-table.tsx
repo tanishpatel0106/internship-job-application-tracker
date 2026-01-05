@@ -14,6 +14,7 @@ import type { Application } from "@/lib/types"
 import { toast } from "sonner"
 import { formatDateOnly } from "@/lib/date"
 import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
+import { BulkResumeUploadDialog } from "@/components/applications/bulk-resume-upload-dialog"
 
 const statusColors = {
   Applied: "bg-blue-100 text-blue-800",
@@ -209,6 +210,7 @@ export function ApplicationsTable() {
   const selectedCount = selectedIds.size
   const allSelected = selectedCount > 0 && selectedCount === applications.data.length
   const isIndeterminate = selectedCount > 0 && selectedCount < applications.data.length
+  const selectedApplications = applications.data.filter((application) => selectedIds.has(application.id))
 
   return (
     <div className="space-y-4">
@@ -216,6 +218,11 @@ export function ApplicationsTable() {
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-card px-4 py-3">
           <div className="text-sm font-medium">{selectedCount} selected</div>
           <div className="flex flex-wrap items-center gap-2">
+            <BulkResumeUploadDialog
+              selectedApplications={selectedApplications}
+              onUploadComplete={fetchApplications}
+              onClearSelection={() => setSelectedIds(new Set())}
+            />
             {bulkStatusActions.map((action) => (
               <Button
                 key={action.status}
