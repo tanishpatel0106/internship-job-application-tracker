@@ -5,6 +5,8 @@ import type React from "react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { getTodayDateString } from "@/lib/date"
+import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
 import type { Application } from "@/lib/types"
 import { Upload } from "lucide-react"
 import { useState } from "react"
@@ -24,11 +26,24 @@ interface BulkResumeUploadDialogProps {
   onClearSelection?: () => void
 }
 
+const buildUploadPayload = (application: Application, applicationDate: string) => ({
+  company_name: application.company_name,
+  position_title: application.position_title,
+  application_date: applicationDate,
+  status: application.status,
+  job_description: application.job_description ?? "",
+  salary_range: application.salary_range ?? "",
+  location: application.location ?? "",
+  application_method: application.application_method ?? "",
+  notes: application.notes ?? "",
+})
+
 export function BulkResumeUploadDialog({
   selectedApplications,
   onUploadComplete,
   onClearSelection,
 }: BulkResumeUploadDialogProps) {
+  const timeZone = useProfileTimeZone()
   const [file, setFile] = useState<File | null>(null)
   const [uploads, setUploads] = useState<UploadItem[]>([])
   const [isUploading, setIsUploading] = useState(false)
@@ -61,10 +76,23 @@ export function BulkResumeUploadDialog({
 
     setIsUploading(true)
     setError(null)
+    const applicationDate = getTodayDateString(timeZone)
+
     for (const application of selectedApplications) {
       updateUpload(application.id, { status: "uploading", filename: file.name, message: undefined })
 
       try {
+        const updateResponse = await fetch(`/api/applications/${application.id}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(buildUploadPayload(application, applicationDate)),
+        })
+
+        if (!updateResponse.ok) {
+          const errorData = await updateResponse.json()
+          throw new Error(errorData.error || "Failed to update application date")
+        }
+
         const formData = new FormData()
         formData.append("file", file)
         formData.append("application_id", application.id)
@@ -104,7 +132,7 @@ export function BulkResumeUploadDialog({
         <DialogHeader>
           <DialogTitle>Upload resumes to selected applications</DialogTitle>
           <DialogDescription>
-            Upload one resume to attach it to every selected application.
+            Upload one resume to attach it to every selected application and set the applied date to today.
           </DialogDescription>
         </DialogHeader>
 
