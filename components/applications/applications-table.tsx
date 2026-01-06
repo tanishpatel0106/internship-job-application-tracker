@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Card, CardContent } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Edit, Trash2, Eye } from "lucide-react"
+import { ArrowDown, ArrowUp, ArrowUpDown, Edit, Eye, Trash2 } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState } from "react"
@@ -43,6 +43,8 @@ export function ApplicationsTable() {
     data: [],
     pagination: { page: 1, limit: 10, total: 0, totalPages: 0 },
   })
+  const sort = searchParams.get("sort") || "application_date"
+  const order = searchParams.get("order") || "desc"
   const [isLoading, setIsLoading] = useState(true)
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
   const [isBulkUpdating, setIsBulkUpdating] = useState(false)
@@ -80,6 +82,41 @@ export function ApplicationsTable() {
   useEffect(() => {
     fetchApplications()
   }, [searchParams])
+
+  const handleSort = (key: string) => {
+    const isActive = sort === key
+    const nextOrder = isActive
+      ? order === "asc"
+        ? "desc"
+        : "asc"
+      : key === "application_date"
+        ? "desc"
+        : "asc"
+    const params = new URLSearchParams(searchParams.toString())
+    params.set("sort", key)
+    params.set("order", nextOrder)
+    params.delete("page")
+    router.push(`/dashboard/applications?${params.toString()}`)
+  }
+
+  const renderSortIcon = (key: string) => {
+    if (sort !== key) {
+      return <ArrowUpDown className="h-3 w-3" />
+    }
+    return order === "asc" ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+  }
+
+  const renderSortableHeader = (label: string, key: string) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 px-2 w-full justify-between font-medium"
+      onClick={() => handleSort(key)}
+    >
+      <span>{label}</span>
+      {renderSortIcon(key)}
+    </Button>
+  )
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this application?")) return
@@ -258,11 +295,11 @@ export function ApplicationsTable() {
                     aria-label="Select all applications"
                   />
                 </TableHead>
-                <TableHead>Position</TableHead>
-                <TableHead>Company</TableHead>
-                <TableHead>Applied Date</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Location</TableHead>
+                <TableHead>{renderSortableHeader("Position", "position_title")}</TableHead>
+                <TableHead>{renderSortableHeader("Company", "company_name")}</TableHead>
+                <TableHead>{renderSortableHeader("Applied Date", "application_date")}</TableHead>
+                <TableHead>{renderSortableHeader("Status", "status")}</TableHead>
+                <TableHead>{renderSortableHeader("Location", "location")}</TableHead>
                 <TableHead className="w-[150px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>

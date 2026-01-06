@@ -19,16 +19,32 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const status = searchParams.get("status")
     const search = searchParams.get("search")
+    const location = searchParams.get("location")
+    const dateFrom = searchParams.get("date_from")
+    const dateTo = searchParams.get("date_to")
+    const sort = searchParams.get("sort") || "application_date"
+    const order = searchParams.get("order") || "desc"
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limitParam = searchParams.get("limit")
     const limit = limitParam === "all" ? null : Number.parseInt(limitParam || "10")
     const offset = limit ? (page - 1) * limit : 0
+    const allowedSorts = new Set([
+      "application_date",
+      "company_name",
+      "position_title",
+      "status",
+      "location",
+      "created_at",
+    ])
+    const sortKey = allowedSorts.has(sort) ? sort : "application_date"
+    const sortAscending = order === "asc"
 
     let query = supabase
       .from("applications")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
-      .order("application_date", { ascending: false })
+      .order(sortKey, { ascending: sortAscending })
+      .order("company_name", { ascending: true })
 
     if (status) {
       query = query.eq("status", status)
@@ -36,6 +52,18 @@ export async function GET(request: NextRequest) {
 
     if (search) {
       query = query.or(`company_name.ilike.%${search}%,position_title.ilike.%${search}%`)
+    }
+
+    if (location) {
+      query = query.ilike("location", `%${location}%`)
+    }
+
+    if (dateFrom) {
+      query = query.gte("application_date", dateFrom)
+    }
+
+    if (dateTo) {
+      query = query.lte("application_date", dateTo)
     }
 
     const { data, error, count } = limit
