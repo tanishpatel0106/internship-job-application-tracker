@@ -1,3 +1,5 @@
+import { getNowInTimeZoneIso } from "@/lib/date"
+import { getUserTimeZone } from "@/lib/profile-time-zone"
 import { createClient } from "@/lib/supabase/server"
 import { taskSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
@@ -49,11 +51,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json()
     const validatedData = taskSchema.parse(body)
 
+    const timeZone = await getUserTimeZone(supabase, user.id)
     const { data, error } = await supabase
       .from("tasks")
       .update({
         ...validatedData,
-        updated_at: new Date().toISOString(),
+        updated_at: getNowInTimeZoneIso(timeZone),
       })
       .eq("id", id)
       .eq("user_id", user.id)

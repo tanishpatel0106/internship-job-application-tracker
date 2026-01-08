@@ -141,3 +141,21 @@ export const getDateInTimeZone = (isoString: string, timeZone: string) => {
   const parts = getTimeZoneParts(date, timeZone)
   return new Date(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute, parts.second)
 }
+
+const padDatePart = (value: number) => String(value).padStart(2, "0")
+
+export const getNowInTimeZoneIso = (timeZone: string) => {
+  const now = new Date()
+  const parts = getTimeZoneParts(now, timeZone)
+  const offsetMinutes = Math.round(getTimeZoneOffset(now, timeZone) / 60000)
+  const sign = offsetMinutes >= 0 ? "+" : "-"
+  const absOffset = Math.abs(offsetMinutes)
+  const offsetHours = Math.floor(absOffset / 60)
+  const offsetMins = absOffset % 60
+
+  return `${parts.year}-${padDatePart(parts.month)}-${padDatePart(parts.day)}T${padDatePart(
+    parts.hour
+  )}:${padDatePart(parts.minute)}:${padDatePart(parts.second)}${sign}${padDatePart(offsetHours)}:${padDatePart(
+    offsetMins
+  )}`
+}
