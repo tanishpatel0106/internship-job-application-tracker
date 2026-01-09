@@ -285,7 +285,7 @@ export function ApplicationsTable() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">
@@ -295,12 +295,22 @@ export function ApplicationsTable() {
                     aria-label="Select all applications"
                   />
                 </TableHead>
-                <TableHead>{renderSortableHeader("Position", "position_title")}</TableHead>
-                <TableHead>{renderSortableHeader("Company", "company_name")}</TableHead>
-                <TableHead>{renderSortableHeader("Applied Date", "application_date")}</TableHead>
-                <TableHead>{renderSortableHeader("Status", "status")}</TableHead>
-                <TableHead>{renderSortableHeader("Location", "location")}</TableHead>
-                <TableHead className="w-[150px] text-right">Actions</TableHead>
+                <TableHead className="w-[25%]">
+                  {renderSortableHeader("Position", "position_title")}
+                </TableHead>
+                <TableHead className="w-[15%]">
+                  {renderSortableHeader("Company", "company_name")}
+                </TableHead>
+                <TableHead className="w-[10%]">
+                  {renderSortableHeader("Applied Date", "application_date")}
+                </TableHead>
+                <TableHead className="w-[10%]">
+                  {renderSortableHeader("Status", "status")}
+                </TableHead>
+                <TableHead className="w-[25%]">
+                  {renderSortableHeader("Location", "location")}
+                </TableHead>
+                <TableHead className="w-[15%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -313,7 +323,7 @@ export function ApplicationsTable() {
                       aria-label={`Select application for ${application.position_title}`}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-normal break-words">
                     <div>
                       <div className="font-medium">{application.position_title}</div>
                       {application.salary_range && (
@@ -321,7 +331,9 @@ export function ApplicationsTable() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{application.company_name}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {application.company_name}
+                  </TableCell>
                   <TableCell>{formatDateOnly(application.application_date, timeZone)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -350,7 +362,9 @@ export function ApplicationsTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                  <TableCell>{application.location || "—"}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {application.location || "—"}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end space-x-2">
                       <Button variant="ghost" size="icon" asChild>
