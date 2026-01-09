@@ -285,7 +285,7 @@ export function ApplicationsTable() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
+          <Table className="table-fixed">
             <TableHeader>
               <TableRow>
                 <TableHead className="w-10">
@@ -295,12 +295,22 @@ export function ApplicationsTable() {
                     aria-label="Select all applications"
                   />
                 </TableHead>
-                <TableHead>{renderSortableHeader("Position", "position_title")}</TableHead>
-                <TableHead>{renderSortableHeader("Company", "company_name")}</TableHead>
-                <TableHead>{renderSortableHeader("Applied Date", "application_date")}</TableHead>
-                <TableHead>{renderSortableHeader("Status", "status")}</TableHead>
-                <TableHead>{renderSortableHeader("Location", "location")}</TableHead>
-                <TableHead className="w-[150px] text-right">Actions</TableHead>
+                <TableHead className="w-[25%]">
+                  {renderSortableHeader("Position", "position_title")}
+                </TableHead>
+                <TableHead className="w-[15%]">
+                  {renderSortableHeader("Company", "company_name")}
+                </TableHead>
+                <TableHead className="w-[10%]">
+                  {renderSortableHeader("Applied Date", "application_date")}
+                </TableHead>
+                <TableHead className="w-[10%]">
+                  {renderSortableHeader("Status", "status")}
+                </TableHead>
+                <TableHead className="w-[25%]">
+                  {renderSortableHeader("Location", "location")}
+                </TableHead>
+                <TableHead className="w-[15%] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
