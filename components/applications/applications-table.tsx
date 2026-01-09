@@ -323,7 +323,7 @@ export function ApplicationsTable() {
                       aria-label={`Select application for ${application.position_title}`}
                     />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="whitespace-normal break-words">
                     <div>
                       <div className="font-medium">{application.position_title}</div>
                       {application.salary_range && (
@@ -331,7 +331,9 @@ export function ApplicationsTable() {
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>{application.company_name}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {application.company_name}
+                  </TableCell>
                   <TableCell>{formatDateOnly(application.application_date, timeZone)}</TableCell>
                   <TableCell>
                     <DropdownMenu>
@@ -360,7 +362,9 @@ export function ApplicationsTable() {
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
-                  <TableCell>{application.location || "—"}</TableCell>
+                  <TableCell className="whitespace-normal break-words">
+                    {application.location || "—"}
+                  </TableCell>
                   <TableCell>
                     <div className="flex items-center justify-end space-x-2">
                       <Button variant="ghost" size="icon" asChild>
