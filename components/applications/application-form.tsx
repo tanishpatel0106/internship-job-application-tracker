@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import type { Application } from "@/lib/types"
 import { getTodayDateString } from "@/lib/date"
 import { useProfileTimeZone } from "@/lib/hooks/use-profile-time-zone"
@@ -23,6 +23,8 @@ export function ApplicationForm({ initialData }: ApplicationFormProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const timeZone = useProfileTimeZone()
+  const [applications, setApplications] = useState<Application[]>([])
+  const [duplicateId, setDuplicateId] = useState("")
 
   const [formData, setFormData] = useState({
     company_name: initialData?.company_name || "",
@@ -35,6 +37,23 @@ export function ApplicationForm({ initialData }: ApplicationFormProps) {
     application_method: initialData?.application_method || "",
     notes: initialData?.notes || "",
   })
+
+  useEffect(() => {
+    if (initialData) return
+
+    const fetchApplications = async () => {
+      try {
+        const response = await fetch("/api/applications?limit=all&order=desc")
+        if (!response.ok) return
+        const data = await response.json()
+        setApplications(Array.isArray(data.data) ? data.data : [])
+      } catch (fetchError) {
+        console.error("Failed to load applications for duplication:", fetchError)
+      }
+    }
+
+    fetchApplications()
+  }, [initialData])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -69,6 +88,39 @@ export function ApplicationForm({ initialData }: ApplicationFormProps) {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
+  const handleDuplicateChange = (applicationId: string) => {
+    setDuplicateId(applicationId)
+    const selected = applications.find((application) => application.id === applicationId)
+    if (!selected) return
+
+    setFormData({
+      company_name: selected.company_name,
+      position_title: selected.position_title,
+      application_date: selected.application_date || getTodayDateString(timeZone),
+      status: selected.status,
+      job_description: selected.job_description || "",
+      salary_range: selected.salary_range || "",
+      location: selected.location || "",
+      application_method: selected.application_method || "",
+      notes: selected.notes || "",
+    })
+  }
+
+  const handleClearDuplicate = () => {
+    setDuplicateId("")
+    setFormData({
+      company_name: "",
+      position_title: "",
+      application_date: getTodayDateString(timeZone),
+      status: "Applied",
+      job_description: "",
+      salary_range: "",
+      location: "",
+      application_method: "",
+      notes: "",
+    })
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -76,6 +128,43 @@ export function ApplicationForm({ initialData }: ApplicationFormProps) {
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
+          {!initialData && (
+            <div className="space-y-2">
+              <Label htmlFor="duplicate_application">Duplicate from previous application</Label>
+              <div className="flex flex-col gap-2 md:flex-row md:items-center">
+                <div className="w-full md:flex-1">
+                  <Select
+                    value={duplicateId}
+                    onValueChange={handleDuplicateChange}
+                    disabled={applications.length === 0}
+                  >
+                    <SelectTrigger id="duplicate_application">
+                      <SelectValue
+                        placeholder={
+                          applications.length === 0
+                            ? "No applications available to duplicate"
+                            : "Select an application to prefill"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {applications.map((application) => (
+                        <SelectItem key={application.id} value={application.id}>
+                          {application.company_name} • {application.position_title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button type="button" variant="outline" onClick={handleClearDuplicate} disabled={!duplicateId}>
+                  Clear
+                </Button>
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Copy details from an existing application to speed up creating a new one.
+              </p>
+            </div>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
               <Label htmlFor="company_name">Company Name *</Label>
