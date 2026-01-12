@@ -1,5 +1,7 @@
 import { createClient } from "@/lib/supabase/server"
 import { queueReminderEmail } from "@/lib/email/reminder-preferences"
+import { getNowInTimeZoneIso } from "@/lib/date"
+import { getUserTimeZone } from "@/lib/profile-time-zone"
 import { applicationSchema, applicationStatusSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
 import { z } from "zod"
@@ -45,11 +47,12 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     const body = await request.json()
     const validatedData = applicationSchema.parse(body)
 
+    const timeZone = await getUserTimeZone(supabase, user.id)
     const { data, error } = await supabase
       .from("applications")
       .update({
         ...validatedData,
-        updated_at: new Date().toISOString(),
+        updated_at: getNowInTimeZoneIso(timeZone),
       })
       .eq("id", id)
       .eq("user_id", user.id)
@@ -93,9 +96,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json()
     const { status } = applicationStatusSchema.parse(body)
 
+    const timeZone = await getUserTimeZone(supabase, user.id)
     const { data, error } = await supabase
       .from("applications")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status, updated_at: getNowInTimeZoneIso(timeZone) })
       .eq("id", id)
       .eq("user_id", user.id)
       .select()

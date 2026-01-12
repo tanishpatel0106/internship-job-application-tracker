@@ -1,3 +1,5 @@
+import { ensureTimeZone, getNowInTimeZoneIso } from "@/lib/date"
+import { getUserTimeZone } from "@/lib/profile-time-zone"
 import { createClient } from "@/lib/supabase/server"
 import { profileSchema } from "@/lib/validations"
 import { type NextRequest, NextResponse } from "next/server"
@@ -49,12 +51,18 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "No profile updates provided" }, { status: 400 })
     }
 
+    let timeZone = await getUserTimeZone(supabase, user.id)
+    if ("time_zone" in updates) {
+      const nextTimeZone = updates.time_zone
+      timeZone = ensureTimeZone(typeof nextTimeZone === "string" ? nextTimeZone : null)
+    }
+
     const applyUpdate = async (payload: Record<string, unknown>) =>
       supabase
         .from("profiles")
         .update({
           ...payload,
-          updated_at: new Date().toISOString(),
+          updated_at: getNowInTimeZoneIso(timeZone),
         })
         .eq("id", user.id)
         .select()
