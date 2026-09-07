@@ -57,6 +57,33 @@ python pipeline.py download --dry-run   # prices the pull, submits nothing
 `pipeline.py` drives the phases: `download`, `data`, `commonality`, `harness`,
 `models`, `smoke`. Any phase accepts `--synthetic` to run without a key.
 
+### Unpacking on macOS
+
+Extract **without `sudo`**:
+
+```bash
+unzip intraday-rv.zip -d ~/Desktop/Research     # zip stores no ownership
+```
+
+`sudo tar xzf` would leave the tree root-owned, and Python then raises
+`PermissionError: [Errno 1] Operation not permitted` while trying to write
+`__pycache__/*.pyc` beside each module it imports. That looks like a test
+failure but is purely a filesystem-permission artefact.
+
+The suite is hardened against this regardless: `tests/conftest.py` sets
+`sys.dont_write_bytecode = True` and `pytest.ini` passes
+`-p no:cacheprovider`, so nothing is written into the source tree and the tests
+pass from a fully read-only checkout. If you hit permission trouble anyway:
+
+```bash
+sudo chown -R "$(whoami)" ~/Desktop/Research/intraday-rv   # if extracted as root
+xattr -dr com.apple.quarantine ~/Desktop/Research/intraday-rv   # downloaded-file flag
+```
+
+If *every* file under `~/Desktop` is unreadable to your shell, that is macOS TCC
+rather than these files: grant your terminal Full Disk Access under System
+Settings > Privacy & Security.
+
 ## The extension
 
 The paper's three schemes conflate two orthogonal axes. Separating them is the

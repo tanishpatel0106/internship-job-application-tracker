@@ -19,6 +19,8 @@ import time
 import warnings
 from pathlib import Path
 
+# Run correctly from a source tree this user cannot write to (see conftest.py).
+sys.dont_write_bytecode = True
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 warnings.filterwarnings("ignore")
 logging.basicConfig(level=logging.ERROR)
