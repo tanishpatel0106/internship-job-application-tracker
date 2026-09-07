@@ -72,7 +72,7 @@ def test_rth_filter_uses_eastern_time_across_dst():
     raw = generate_panel(["Z"], "2022-03-07", "2022-03-18", seed=1)["Z"]
     clean, _ = clean_symbol(raw, "2022-03-07", "2022-03-18", symbol="Z")
     et = clean.index
-    assert et.tz.key == "America/New_York"
+    assert str(et.tz) == "America/New_York"
     # Every session starts 09:30 and ends 16:00 *local*, spanning the 13 March
     # DST transition; the corresponding UTC hour differs before and after.
     times = pd.Series(et.strftime("%H:%M"))
