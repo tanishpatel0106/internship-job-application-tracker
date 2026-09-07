@@ -70,10 +70,12 @@ unzip intraday-rv.zip -d ~/Desktop/Research     # zip stores no ownership
 `__pycache__/*.pyc` beside each module it imports. That looks like a test
 failure but is purely a filesystem-permission artefact.
 
-The suite is hardened against this regardless: `tests/conftest.py` sets
-`sys.dont_write_bytecode = True` and `pytest.ini` passes
-`-p no:cacheprovider`, so nothing is written into the source tree and the tests
-pass from a fully read-only checkout. If you hit permission trouble anyway:
+The suite is hardened against this regardless. A root-level `conftest.py` sets
+`sys.dont_write_bytecode = True` early enough to cover pytest's own assertion
+rewriting, and `pytest.ini` passes `-p no:cacheprovider`, so **nothing at all is
+written into the source tree**. Verified by running the suite as an
+unprivileged user against a root-owned, non-writable checkout: no
+`PermissionError`, and zero files created. If you hit permission trouble anyway:
 
 ```bash
 sudo chown -R "$(whoami)" ~/Desktop/Research/intraday-rv   # if extracted as root
