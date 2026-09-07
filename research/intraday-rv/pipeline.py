@@ -26,7 +26,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import numpy as np
 
-from src.config import COVID_PROBE, FOLDS, HORIZONS, ensure_dirs
+from src.config import (
+    COVID_PROBE, FOLDS, HORIZONS, METRICS, PANELS, ensure_dirs,
+)
 
 log = logging.getLogger("pipeline")
 
@@ -75,16 +77,34 @@ def _synthetic_panels(args):
 
 def cmd_data(args) -> int:
     ensure_dirs()
-    if not args.synthetic:
-        print("Live data path requires the Databento download to have completed.")
-        print("Run `python pipeline.py download --no-dry-run` first, or use "
-              "--synthetic to exercise the pipeline.")
-        return 1
-    panels = _synthetic_panels(args)
-    for h, p in panels.items():
-        p.save()
-        print(f"{h:6s} panel {p.values.shape}  floored={p.meta['n_floored']}/"
-              f"{p.meta['n_cells']}")
+    trade, report = {}, None
+    if args.synthetic:
+        panels = _synthetic_panels(args)
+    else:
+        from src.data.ingest import build_live_panels, extract_symbols
+
+        if not args.skip_extract:
+            log.info("pass 1: splitting DBN files into per-symbol Parquet")
+            extract_symbols(raw_dir=args.raw_dir, force=args.force)
+        log.info("pass 2: cleaning and building RV panels")
+        panels, trade, report = build_live_panels(
+            args.start, args.end, horizons=args.horizons, symbols=args.symbols,
+        )
+
+    for h, pn in panels.items():
+        pn.save()
+        print(f"{h:6s} panel {pn.values.shape}  "
+              f"floored={pn.meta['n_floored']}/{pn.meta['n_cells']}  "
+              f"dropped={len(pn.meta['dropped_symbols'])}")
+    for h, pn in trade.items():
+        pn.save(PANELS / "trade")
+
+    if report is not None:
+        path = METRICS / "clean_report.csv"
+        report.to_csv(path, index=False)
+        kept = int((~report["dropped"]).sum())
+        print(f"\nsymbols kept: {kept} / {len(report)}")
+        print(f"per-symbol cleaning report -> {path}")
     return 0
 
 
@@ -200,10 +220,11 @@ def main(argv=None) -> int:
     def common(p, synthetic_default=False):
         p.add_argument("--synthetic", action="store_true", default=synthetic_default)
         p.add_argument("--n-symbols", type=int, default=12)
-        p.add_argument("--start", default="2019-01-02")
-        p.add_argument("--end", default="2021-12-31")
+        p.add_argument("--start", default="2018-05-01")
+        p.add_argument("--end", default="2026-09-05")
         p.add_argument("--seed", type=int, default=42)
-        p.add_argument("--horizons", nargs="+", default=["65min", "1day"],
+        p.add_argument("--horizons", nargs="+",
+                       default=["10min", "30min", "65min", "1day"],
                        choices=list(HORIZONS))
 
     d = sub.add_parser("download")
@@ -215,6 +236,14 @@ def main(argv=None) -> int:
     for name, fn in [("data", cmd_data), ("commonality", cmd_commonality)]:
         p = sub.add_parser(name)
         common(p)
+        p.add_argument("--raw-dir", default=None,
+                       help="where the DBN files landed (default data/raw)")
+        p.add_argument("--symbols", nargs="+", default=None,
+                       help="restrict to these symbols (default: whole universe)")
+        p.add_argument("--skip-extract", action="store_true",
+                       help="pass 1 already done; go straight to cleaning")
+        p.add_argument("--force", action="store_true",
+                       help="re-ingest even if per-symbol Parquet exists")
         p.set_defaults(func=fn)
 
     h = sub.add_parser("harness")

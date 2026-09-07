@@ -1,5 +1,5 @@
 # Raw and intermediate market data -- large, and re-downloadable from Databento
-data/
+/data/
 outputs/panels/*.npy
 outputs/predictions/*.npz
 outputs/**/*.parquet
