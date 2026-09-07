@@ -1,0 +1,31 @@
+# Main experiment: the full paper + CAM extension grid (spec Sections 8, 14).
+name: main
+horizons: [10min, 30min, 65min, 1day]
+folds: [1, 2, 3, 4]
+models: [SARIMA, HAR-D, OLS, LASSO, XGBoost, MLP, LSTM]
+poolings: [SAM, CAM, UAM]
+features: [own, augmented]
+
+clustering:
+  method: spectral        # gics | spectral | sponge
+  k: 8
+  k_sweep: [2, 4, 6, 8, 11]
+
+model_params:
+  LASSO:   {n_alphas: 20, cv: validation}
+  XGBoost: {learning_rate: 0.1, max_depth: 10, n_estimators: 2000,
+            early_stopping_rounds: 10}
+  MLP:     {hidden: [128, 64, 32], batch_norm: true, lr: 0.001,
+            batch_size: 1024, epochs: 100, early_stopping_rounds: 10, seeds: 10}
+  LSTM:    {hidden: 64, layers: 2, lr: 0.001, batch_size: 1024,
+            epochs: 100, early_stopping_rounds: 10, seeds: 10}
+  SARIMA:  {order: [1, 1, 1]}
+
+evaluation:
+  losses: [mse, qlike]
+  primary: qlike
+  mcs_alpha: 0.05
+  mcs_bootstrap: 1000
+  sharpe: 0.4
+  risk_aversion: 2.0
+  tc_spread_window: 90

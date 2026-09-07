@@ -1,0 +1,16 @@
+# Spec Section 8.1: probes the turmoil claim that the main schedule cannot test,
+# because March 2020 is in-sample for every main fold.
+#
+# REPORT THIS IN ITS OWN TABLE. Never pool it with the four main folds, and state
+# the short training window as a caveat.
+name: covid_probe
+train: [2018-06-01, 2019-06-30]
+validate: [2019-07-01, 2019-12-31]
+test: [2020-01-01, 2020-12-31]
+horizons: [10min, 30min, 65min, 1day]
+models: [HAR-D, OLS, LASSO, MLP]
+poolings: [SAM, CAM, UAM]
+features: [own, augmented]
+caveats:
+  - Training window is one year, far shorter than the main folds.
+  - Purpose is to probe the AUGMENTED-in-turmoil claim, not to produce headline numbers.

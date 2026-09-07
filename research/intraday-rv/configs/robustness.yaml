@@ -1,0 +1,25 @@
+# Phase 9 robustness runs (spec Sections 2.9, 2.10, 4.4, 14).
+name: robustness
+
+trade_vs_mid:
+  description: RV from trade prices vs RV from mids, per stock and horizon.
+  rationale: >
+    Quantifies bid-ask bounce contamination and bounds how much commonality R2
+    is attenuated by microstructure noise. Comes free from the same download,
+    since bbo-1m carries the last sale in `price`.
+  horizons: [10min, 30min, 65min, 1day]
+
+wide_spread_exclusion:
+  description: Headline table excluding the widest decile by median relative spread.
+  rationale: Confirms no result depends on regional-book (NYSE-listed) names.
+  exclude_quantile: 0.90
+
+value_weighted_market:
+  description: Market RV value-weighted instead of equal-weighted.
+  rationale: The paper reports similar results; verify rather than assume.
+
+clustering_sensitivity:
+  description: CAM performance across k and clustering method.
+  methods: [gics, spectral, sponge]
+  k_sweep: [2, 4, 6, 8, 11]
+  note: Report the sensitivity curve. If CAM is flat in k, say so.

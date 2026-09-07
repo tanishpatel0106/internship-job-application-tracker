@@ -1,0 +1,14 @@
+# Raw and intermediate market data -- large, and re-downloadable from Databento
+data/
+outputs/panels/*.npy
+outputs/predictions/*.npz
+outputs/**/*.parquet
+
+# Never commit credentials
+.env
+*.key
+
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
